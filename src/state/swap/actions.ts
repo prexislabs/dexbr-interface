@@ -2,17 +2,17 @@ import { createAction } from '@reduxjs/toolkit'
 
 export enum Field {
   INPUT = 'INPUT',
-  OUTPUT = 'OUTPUT',
+  OUTPUT = 'OUTPUT'
 }
 
-export const selectCurrency = createAction<{ field: Field; currencyId: string }>('swap/selectCurrency')
-export const switchCurrencies = createAction<void>('swap/switchCurrencies')
-export const typeInput = createAction<{ field: Field; typedValue: string }>('swap/typeInput')
+export const selectToken = createAction<{ field: Field; address: string }>('selectToken')
+export const switchTokens = createAction<void>('switchTokens')
+export const typeInput = createAction<{ field: Field; typedValue: string }>('typeInput')
 export const replaceSwapState = createAction<{
   field: Field
   typedValue: string
-  inputCurrencyId?: string
-  outputCurrencyId?: string
+  inputTokenAddress?: string
+  outputTokenAddress?: string
   recipient: string | null
-}>('swap/replaceSwapState')
-export const setRecipient = createAction<{ recipient: string | null }>('swap/setRecipient')
+}>('replaceSwapState')
+export const setRecipient = createAction<{ recipient: string | null }>('setRecipient')

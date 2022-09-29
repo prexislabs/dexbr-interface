@@ -1,26 +1,34 @@
-import { useWeb3React } from '@web3-react/core'
-import { SupportedChainId } from 'constants/chains'
-import styled from 'styled-components/macro'
-import { MEDIA_WIDTHS } from 'theme'
+import { ChainId, Pair, Token } from 'dexbr-sdk'
+import React, { useContext, useMemo } from 'react'
+import styled, { ThemeContext } from 'styled-components'
+import { useMediaLayout } from 'use-media'
 
-import { useActivePopups } from '../../state/application/hooks'
-import { useURLWarningVisible } from '../../state/user/hooks'
+import { X } from 'react-feather'
+import { PopupContent } from '../../state/application/actions'
+import { useActivePopups, useRemovePopup } from '../../state/application/hooks'
+import { ExternalLink } from '../../theme'
 import { AutoColumn } from '../Column'
-import ClaimPopup from './ClaimPopup'
-import PopupItem from './PopupItem'
+import DoubleTokenLogo from '../DoubleLogo'
+import Row from '../Row'
+import TxnPopup from '../TxnPopup'
+import { Text } from 'rebass'
+
+const StyledClose = styled(X)`
+  position: absolute;
+  right: 10px;
+  top: 10px;
+
+  :hover {
+    cursor: pointer;
+  }
+`
 
 const MobilePopupWrapper = styled.div<{ height: string | number }>`
   position: relative;
   max-width: 100%;
   height: ${({ height }) => height};
   margin: ${({ height }) => (height ? '0 auto;' : 0)};
-  margin-bottom: ${({ height }) => (height ? '20px' : 0)};
-
-  display: none;
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    display: block;
-    padding-top: 20px;
-  `};
+  margin-bottom: ${({ height }) => (height ? '20px' : 0)}};
 `
 
 const MobilePopupInner = styled.div`
@@ -35,55 +43,124 @@ const MobilePopupInner = styled.div`
   }
 `
 
-const StopOverflowQuery = `@media screen and (min-width: ${MEDIA_WIDTHS.deprecated_upToMedium + 1}px) and (max-width: ${
-  MEDIA_WIDTHS.deprecated_upToMedium + 500
-}px)`
-
-const FixedPopupColumn = styled(AutoColumn)<{ extraPadding: boolean; xlPadding: boolean }>`
-  position: fixed;
-  top: ${({ extraPadding }) => (extraPadding ? '64px' : '56px')};
+const FixedPopupColumn = styled(AutoColumn)`
+  position: absolute;
+  top: 112px;
   right: 1rem;
   max-width: 355px !important;
   width: 100%;
-  z-index: 3;
 
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
+  ${({ theme }) => theme.mediaWidth.upToSmall`
     display: none;
   `};
-
-  ${StopOverflowQuery} {
-    top: ${({ extraPadding, xlPadding }) => (xlPadding ? '64px' : extraPadding ? '64px' : '56px')};
-  }
 `
 
-export default function Popups() {
-  // get all popups
-  const activePopups = useActivePopups()
+const Popup = styled.div`
+  display: inline-block;
+  width: 100%;
+  padding: 1em;
+  background-color: ${({ theme }) => theme.bg1};
+  position: relative;
+  border-radius: 10px;
+  padding: 20px;
+  padding-right: 35px;
+  z-index: 2;
+  overflow: hidden;
 
-  const urlWarningActive = useURLWarningVisible()
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    min-width: 290px;
+  `}
+`
 
-  // need extra padding if network is not L1 Ethereum
-  const { chainId } = useWeb3React()
-  const isNotOnMainnet = Boolean(chainId && chainId !== SupportedChainId.MAINNET)
+function PoolPopup({
+  token0,
+  token1
+}: {
+  token0: { address?: string; symbol?: string }
+  token1: { address?: string; symbol?: string }
+}) {
+  const pairAddress: string | null = useMemo(() => {
+    if (!token0 || !token1) return null
+    // just mock it out
+    return Pair.getAddress(
+      new Token(ChainId.MAINNET, token0.address, 18),
+      new Token(ChainId.MAINNET, token1.address, 18)
+    )
+  }, [token0, token1])
 
   return (
-    <>
-      <FixedPopupColumn gap="20px" extraPadding={urlWarningActive} xlPadding={isNotOnMainnet}>
-        <ClaimPopup />
-        {activePopups.map((item) => (
-          <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs} />
-        ))}
+    <AutoColumn gap={'10px'}>
+      <Text fontSize={20} fontWeight={500}>
+        Pool Imported
+      </Text>
+      <Row>
+        <DoubleTokenLogo a0={token0?.address ?? ''} a1={token1?.address ?? ''} margin={true} />
+        <Text fontSize={16} fontWeight={500}>
+          UNI {token0?.symbol} / {token1?.symbol}
+        </Text>
+      </Row>
+      {pairAddress ? (
+        <ExternalLink href={`https://uniswap.info/pair/${pairAddress}`}>View on Uniswap Info.</ExternalLink>
+      ) : null}
+    </AutoColumn>
+  )
+}
+
+function PopupItem({ content, popKey }: { content: PopupContent; popKey: string }) {
+  if ('txn' in content) {
+    const {
+      txn: { hash, success, summary }
+    } = content
+    return <TxnPopup popKey={popKey} hash={hash} success={success} summary={summary} />
+  } else if ('poolAdded' in content) {
+    const {
+      poolAdded: { token0, token1 }
+    } = content
+
+    return <PoolPopup token0={token0} token1={token1} />
+  }
+}
+
+export default function Popups() {
+  const theme = useContext(ThemeContext)
+  // get all popups
+  const activePopups = useActivePopups()
+  const removePopup = useRemovePopup()
+
+  // switch view settings on mobile
+  const isMobile = useMediaLayout({ maxWidth: '600px' })
+
+  if (!isMobile) {
+    return (
+      <FixedPopupColumn gap="20px">
+        {activePopups.map(item => {
+          return (
+            <Popup key={item.key}>
+              <StyledClose color={theme.text2} onClick={() => removePopup(item.key)} />
+              <PopupItem content={item.content} popKey={item.key} />
+            </Popup>
+          )
+        })}
       </FixedPopupColumn>
+    )
+  }
+  //mobile
+  else
+    return (
       <MobilePopupWrapper height={activePopups?.length > 0 ? 'fit-content' : 0}>
         <MobilePopupInner>
           {activePopups // reverse so new items up front
             .slice(0)
             .reverse()
-            .map((item) => (
-              <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs} />
-            ))}
+            .map(item => {
+              return (
+                <Popup key={item.key}>
+                  <StyledClose color={theme.text2} onClick={() => removePopup(item.key)} />
+                  <PopupItem content={item.content} popKey={item.key} />
+                </Popup>
+              )
+            })}
         </MobilePopupInner>
       </MobilePopupWrapper>
-    </>
-  )
+    )
 }

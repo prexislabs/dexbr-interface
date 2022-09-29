@@ -1,22 +1,18 @@
-import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import JSBI from 'jsbi'
+import { JSBI, TokenAmount, WETH } from 'dexbr-sdk'
+import { MIN_ETH } from '../constants'
 
-const MIN_NATIVE_CURRENCY_FOR_GAS: JSBI = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16)) // .01 ETH
 /**
  * Given some token amount, return the max that can be spent of it
- * @param currencyAmount to return max of
+ * @param tokenAmount to return max of
  */
-export function maxAmountSpend(currencyAmount?: CurrencyAmount<Currency>): CurrencyAmount<Currency> | undefined {
-  if (!currencyAmount) return undefined
-  if (currencyAmount.currency.isNative) {
-    if (JSBI.greaterThan(currencyAmount.quotient, MIN_NATIVE_CURRENCY_FOR_GAS)) {
-      return CurrencyAmount.fromRawAmount(
-        currencyAmount.currency,
-        JSBI.subtract(currencyAmount.quotient, MIN_NATIVE_CURRENCY_FOR_GAS)
-      )
+export function maxAmountSpend(tokenAmount?: TokenAmount): TokenAmount | undefined {
+  if (!tokenAmount) return
+  if (tokenAmount.token.equals(WETH[tokenAmount.token.chainId])) {
+    if (JSBI.greaterThan(tokenAmount.raw, MIN_ETH)) {
+      return new TokenAmount(tokenAmount.token, JSBI.subtract(tokenAmount.raw, MIN_ETH))
     } else {
-      return CurrencyAmount.fromRawAmount(currencyAmount.currency, JSBI.BigInt(0))
+      return new TokenAmount(tokenAmount.token, JSBI.BigInt(0))
     }
   }
-  return currencyAmount
+  return tokenAmount
 }

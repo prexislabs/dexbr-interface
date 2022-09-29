@@ -1,83 +1,73 @@
-import '@reach/dialog/styles.css'
-import 'inter-ui'
-import 'polyfills'
-import 'components/analytics'
-
-import { FeatureFlagsProvider } from 'featureFlags'
-import RelayEnvironment from 'graphql/data/RelayEnvironment'
-import { BlockNumberProvider } from 'lib/hooks/useBlockNumber'
-import { MulticallUpdater } from 'lib/state/multicall'
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { Web3Provider } from '@ethersproject/providers'
+import { createWeb3ReactRoot, Web3ReactProvider } from '@web3-react/core'
+import React from 'react'
+import { isMobile } from 'react-device-detect'
+import ReactDOM from 'react-dom'
+import ReactGA from 'react-ga'
 import { Provider } from 'react-redux'
-import { RelayEnvironmentProvider } from 'react-relay'
-import { HashRouter } from 'react-router-dom'
-
-import Blocklist from './components/Blocklist'
-import Web3Provider from './components/Web3Provider'
-import { LanguageProvider } from './i18n'
+import { NetworkContextName } from './constants'
+import 'inter-ui'
+import './i18n'
 import App from './pages/App'
-import * as serviceWorkerRegistration from './serviceWorkerRegistration'
 import store from './state'
 import ApplicationUpdater from './state/application/updater'
-import ListsUpdater from './state/lists/updater'
-import LogsUpdater from './state/logs/updater'
 import TransactionUpdater from './state/transactions/updater'
 import UserUpdater from './state/user/updater'
-import ThemeProvider, { ThemedGlobalStyle } from './theme'
-import RadialGradientByChainUpdater from './theme/RadialGradientByChainUpdater'
+import MulticallUpdater from './state/multicall/updater'
+import ThemeProvider, { FixedGlobalStyle, ThemedGlobalStyle } from './theme'
 
-const queryClient = new QueryClient()
+const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName)
 
-if (!!window.ethereum) {
-  window.ethereum.autoRefreshOnNetworkChange = false
+function getLibrary(provider: any): Web3Provider {
+  const library = new Web3Provider(provider)
+  library.pollingInterval = 15000
+  return library
 }
+
+const GOOGLE_ANALYTICS_ID: string | undefined = process.env.REACT_APP_GOOGLE_ANALYTICS_ID
+if (typeof GOOGLE_ANALYTICS_ID === 'string') {
+  ReactGA.initialize(GOOGLE_ANALYTICS_ID)
+  ReactGA.set({
+    customBrowserType: !isMobile ? 'desktop' : 'web3' in window || 'ethereum' in window ? 'mobileWeb3' : 'mobileRegular'
+  })
+} else {
+  ReactGA.initialize('test', { testMode: true, debug: true })
+}
+
+window.addEventListener('error', error => {
+  ReactGA.exception({
+    description: `${error.message} @ ${error.filename}:${error.lineno}:${error.colno}`,
+    fatal: true
+  })
+})
 
 function Updaters() {
   return (
     <>
-      <RadialGradientByChainUpdater />
-      <ListsUpdater />
       <UserUpdater />
       <ApplicationUpdater />
       <TransactionUpdater />
       <MulticallUpdater />
-      <LogsUpdater />
     </>
   )
 }
 
-const container = document.getElementById('root') as HTMLElement
-
-createRoot(container).render(
-  <StrictMode>
-    <Provider store={store}>
-      <FeatureFlagsProvider>
-        <QueryClientProvider client={queryClient}>
-          <HashRouter>
-            <LanguageProvider>
-              <Web3Provider>
-                <RelayEnvironmentProvider environment={RelayEnvironment}>
-                  <Blocklist>
-                    <BlockNumberProvider>
-                      <Updaters />
-                      <ThemeProvider>
-                        <ThemedGlobalStyle />
-                        <App />
-                      </ThemeProvider>
-                    </BlockNumberProvider>
-                  </Blocklist>
-                </RelayEnvironmentProvider>
-              </Web3Provider>
-            </LanguageProvider>
-          </HashRouter>
-        </QueryClientProvider>
-      </FeatureFlagsProvider>
-    </Provider>
-  </StrictMode>
+ReactDOM.render(
+  <>
+    <FixedGlobalStyle />
+    <Web3ReactProvider getLibrary={getLibrary}>
+      <Web3ProviderNetwork getLibrary={getLibrary}>
+        <Provider store={store}>
+          <Updaters />
+          <ThemeProvider>
+            <>
+              <ThemedGlobalStyle />
+              <App />
+            </>
+          </ThemeProvider>
+        </Provider>
+      </Web3ProviderNetwork>
+    </Web3ReactProvider>
+  </>,
+  document.getElementById('root')
 )
-
-if (process.env.REACT_APP_SERVICE_WORKER !== 'false') {
-  serviceWorkerRegistration.register()
-}

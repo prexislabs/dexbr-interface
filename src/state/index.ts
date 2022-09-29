@@ -1,53 +1,33 @@
-import { configureStore } from '@reduxjs/toolkit'
-import { setupListeners } from '@reduxjs/toolkit/query/react'
-import multicall from 'lib/state/multicall'
-import { load, save } from 'redux-localstorage-simple'
-import { isTestEnv } from 'utils/env'
+import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit'
+import { save, load } from 'redux-localstorage-simple'
 
 import application from './application/reducer'
-import burn from './burn/reducer'
-import burnV3 from './burn/v3/reducer'
-import connection from './connection/reducer'
-import { updateVersion } from './global/actions'
-import lists from './lists/reducer'
-import logs from './logs/slice'
-import mint from './mint/reducer'
-import mintV3 from './mint/v3/reducer'
-import { routingApi } from './routing/slice'
-import swap from './swap/reducer'
-import transactions from './transactions/reducer'
 import user from './user/reducer'
-import wallets from './wallets/reducer'
+import transactions from './transactions/reducer'
+import swap from './swap/reducer'
+import mint from './mint/reducer'
+import burn from './burn/reducer'
+import multicall from './multicall/reducer'
 
-const PERSISTED_KEYS: string[] = ['user', 'transactions', 'lists']
+import { updateVersion } from './user/actions'
+
+const PERSISTED_KEYS: string[] = ['user', 'transactions']
 
 const store = configureStore({
   reducer: {
     application,
     user,
-    connection,
     transactions,
-    wallets,
     swap,
     mint,
-    mintV3,
     burn,
-    burnV3,
-    multicall: multicall.reducer,
-    lists,
-    logs,
-    [routingApi.reducerPath]: routingApi.reducer,
+    multicall
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ thunk: true })
-      .concat(routingApi.middleware)
-      .concat(save({ states: PERSISTED_KEYS, debounce: 1000 })),
-  preloadedState: load({ states: PERSISTED_KEYS, disableWarnings: isTestEnv() }),
+  middleware: [...getDefaultMiddleware(), save({ states: PERSISTED_KEYS })],
+  preloadedState: load({ states: PERSISTED_KEYS })
 })
 
 store.dispatch(updateVersion())
-
-setupListeners(store.dispatch)
 
 export default store
 

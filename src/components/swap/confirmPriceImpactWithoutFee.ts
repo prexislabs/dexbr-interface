@@ -1,12 +1,7 @@
-import { Percent } from '@uniswap/sdk-core'
+// gathers additional user consent for a high price impact
+import { Percent } from 'dexbr-sdk'
+import { ALLOWED_PRICE_IMPACT_HIGH, PRICE_IMPACT_WITHOUT_FEE_CONFIRM_MIN } from '../../constants'
 
-import { ALLOWED_PRICE_IMPACT_HIGH, PRICE_IMPACT_WITHOUT_FEE_CONFIRM_MIN } from '../../constants/misc'
-
-/**
- * Given the price impact, get user confirmation.
- *
- * @param priceImpactWithoutFee price impact of the trade without the fee.
- */
 export default function confirmPriceImpactWithoutFee(priceImpactWithoutFee: Percent): boolean {
   if (!priceImpactWithoutFee.lessThan(PRICE_IMPACT_WITHOUT_FEE_CONFIRM_MIN)) {
     return (

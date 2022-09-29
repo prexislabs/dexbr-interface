@@ -1,166 +1,95 @@
-import { Trans } from '@lingui/macro'
-import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
-import Card from 'components/Card'
-import { LoadingRows } from 'components/Loader/styled'
-import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
-import { RedesignVariant, useRedesignFlag } from 'featureFlags/flags/redesign'
-import useNativeCurrency from 'lib/hooks/useNativeCurrency'
-import { useMemo } from 'react'
-import { InterfaceTrade } from 'state/routing/types'
-import styled, { useTheme } from 'styled-components/macro'
-
-import { Separator, ThemedText } from '../../theme'
-import { computeRealizedPriceImpact } from '../../utils/prices'
+import { Trade, TradeType } from 'dexbr-sdk'
+import React, { useContext } from 'react'
+import { ThemeContext } from 'styled-components'
+import { Field } from '../../state/swap/actions'
+import { useUserSlippageTolerance } from '../../state/user/hooks'
+import { TYPE } from '../../theme'
+import { computeSlippageAdjustedAmounts, computeTradePriceBreakdown } from '../../utils/prices'
 import { AutoColumn } from '../Column'
+import QuestionHelper from '../QuestionHelper'
 import { RowBetween, RowFixed } from '../Row'
-import { MouseoverTooltip } from '../Tooltip'
 import FormattedPriceImpact from './FormattedPriceImpact'
+import { SectionBreak } from './styleds'
+import SwapRoute from './SwapRoute'
 
-const StyledCard = styled(Card)`
-  padding: 0;
-`
+function TradeSummary({ trade, allowedSlippage }: { trade: Trade; allowedSlippage: number }) {
+  const theme = useContext(ThemeContext)
+  const { priceImpactWithoutFee, realizedLPFee } = computeTradePriceBreakdown(trade)
+  const isExactIn = trade.tradeType === TradeType.EXACT_INPUT
+  const slippageAdjustedAmounts = computeSlippageAdjustedAmounts(trade, allowedSlippage)
 
-interface AdvancedSwapDetailsProps {
-  trade?: InterfaceTrade<Currency, Currency, TradeType>
-  allowedSlippage: Percent
-  syncing?: boolean
-  hideInfoTooltips?: boolean
-}
+  return (
+    <>
+      <AutoColumn style={{ padding: '0 20px' }}>
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
+              {isExactIn ? 'Minimum received' : 'Maximum sold'}
+            </TYPE.black>
+            <QuestionHelper text="Your transaction will revert if there is a large, unfavorable price movement before it is confirmed." />
+          </RowFixed>
+          <RowFixed>
+            <TYPE.black color={theme.text1} fontSize={14}>
+              {isExactIn
+                ? `${slippageAdjustedAmounts[Field.OUTPUT]?.toSignificant(4)} ${trade.outputAmount.token.symbol}` ?? '-'
+                : `${slippageAdjustedAmounts[Field.INPUT]?.toSignificant(4)} ${trade.inputAmount.token.symbol}` ?? '-'}
+            </TYPE.black>
+          </RowFixed>
+        </RowBetween>
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
+              Price Impact
+            </TYPE.black>
+            <QuestionHelper text="The difference between the market price and estimated price due to trade size." />
+          </RowFixed>
+          <FormattedPriceImpact priceImpact={priceImpactWithoutFee} />
+        </RowBetween>
 
-function TextWithLoadingPlaceholder({
-  syncing,
-  width,
-  children,
-}: {
-  syncing: boolean
-  width: number
-  children: JSX.Element
-}) {
-  return syncing ? (
-    <LoadingRows>
-      <div style={{ height: '15px', width: `${width}px` }} />
-    </LoadingRows>
-  ) : (
-    children
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
+              Liquidity Provider Fee
+            </TYPE.black>
+            <QuestionHelper text="A portion of each trade (0.30%) goes to liquidity providers as a protocol incentive." />
+          </RowFixed>
+          <TYPE.black fontSize={14} color={theme.text1}>
+            {realizedLPFee ? `${realizedLPFee.toSignificant(4)} ${trade.inputAmount.token.symbol}` : '-'}
+          </TYPE.black>
+        </RowBetween>
+      </AutoColumn>
+    </>
   )
 }
 
-export function AdvancedSwapDetails({
-  trade,
-  allowedSlippage,
-  syncing = false,
-  hideInfoTooltips = false,
-}: AdvancedSwapDetailsProps) {
-  const theme = useTheme()
-  const { chainId } = useWeb3React()
-  const nativeCurrency = useNativeCurrency()
-  const redesignFlag = useRedesignFlag()
-  const redesignFlagEnabled = redesignFlag === RedesignVariant.Enabled
+export interface AdvancedSwapDetailsProps {
+  trade?: Trade
+}
 
-  const { expectedOutputAmount, priceImpact } = useMemo(() => {
-    return {
-      expectedOutputAmount: trade?.outputAmount,
-      priceImpact: trade ? computeRealizedPriceImpact(trade) : undefined,
-    }
-  }, [trade])
+export function AdvancedSwapDetails({ trade }: AdvancedSwapDetailsProps) {
+  const theme = useContext(ThemeContext)
 
-  return !trade ? null : (
-    <StyledCard>
-      <AutoColumn gap="8px">
-        <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  The amount you expect to receive at the current market price. You may receive less or more if the
-                  market price changes while your transaction is pending.
-                </Trans>
-              }
-              disableHover={hideInfoTooltips}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.deprecated_text1}>
-                <Trans>Expected Output</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={syncing} width={65}>
-            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-              {expectedOutputAmount
-                ? `${expectedOutputAmount.toSignificant(6)}  ${expectedOutputAmount.currency.symbol}`
-                : '-'}
-            </ThemedText.DeprecatedBlack>
-          </TextWithLoadingPlaceholder>
-        </RowBetween>
-        <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip
-              text={<Trans>The impact your trade has on the market price of this pool.</Trans>}
-              disableHover={hideInfoTooltips}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.deprecated_text1}>
-                <Trans>Price Impact</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={syncing} width={50}>
-            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-              <FormattedPriceImpact priceImpact={priceImpact} />
-            </ThemedText.DeprecatedBlack>
-          </TextWithLoadingPlaceholder>
-        </RowBetween>
-        <Separator redesignFlag={redesignFlagEnabled} />
-        <RowBetween>
-          <RowFixed style={{ marginRight: '20px' }}>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  The minimum amount you are guaranteed to receive. If the price slips any further, your transaction
-                  will revert.
-                </Trans>
-              }
-              disableHover={hideInfoTooltips}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.deprecated_text3}>
-                {trade.tradeType === TradeType.EXACT_INPUT ? (
-                  <Trans>Minimum received</Trans>
-                ) : (
-                  <Trans>Maximum sent</Trans>
-                )}{' '}
-                <Trans>after slippage</Trans> ({allowedSlippage.toFixed(2)}%)
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={syncing} width={70}>
-            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.deprecated_text3}>
-              {trade.tradeType === TradeType.EXACT_INPUT
-                ? `${trade.minimumAmountOut(allowedSlippage).toSignificant(6)} ${trade.outputAmount.currency.symbol}`
-                : `${trade.maximumAmountIn(allowedSlippage).toSignificant(6)} ${trade.inputAmount.currency.symbol}`}
-            </ThemedText.DeprecatedBlack>
-          </TextWithLoadingPlaceholder>
-        </RowBetween>
-        {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
-          <RowBetween>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  The fee paid to miners who process your transaction. This must be paid in {nativeCurrency.symbol}.
-                </Trans>
-              }
-              disableHover={hideInfoTooltips}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.deprecated_text3}>
-                <Trans>Network Fee</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-            <TextWithLoadingPlaceholder syncing={syncing} width={50}>
-              <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.deprecated_text3}>
-                ~${trade.gasUseEstimateUSD.toFixed(2)}
-              </ThemedText.DeprecatedBlack>
-            </TextWithLoadingPlaceholder>
-          </RowBetween>
-        )}
-      </AutoColumn>
-    </StyledCard>
+  const [allowedSlippage] = useUserSlippageTolerance()
+
+  const showRoute = trade?.route?.path?.length > 2
+
+  return (
+    <AutoColumn gap="md">
+      {trade && <TradeSummary trade={trade} allowedSlippage={allowedSlippage} />}
+      {showRoute && (
+        <>
+          <SectionBreak />
+          <AutoColumn style={{ padding: '0 24px' }}>
+            <RowFixed>
+              <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
+                Route
+              </TYPE.black>
+              <QuestionHelper text="Routing through these tokens resulted in the best price for your trade." />
+            </RowFixed>
+            <SwapRoute trade={trade} />
+          </AutoColumn>
+        </>
+      )}
+    </AutoColumn>
   )
 }

@@ -1,40 +1,34 @@
-import { Currency } from '@uniswap/sdk-core'
-import styled from 'styled-components/macro'
+import React from 'react'
+import styled from 'styled-components'
+import TokenLogo from '../TokenLogo'
 
-import CurrencyLogo from '../CurrencyLogo'
-
-const Wrapper = styled.div<{ margin: boolean; sizeraw: number }>`
+const TokenWrapper = styled.div<{ margin: boolean; sizeraw: number }>`
   position: relative;
   display: flex;
   flex-direction: row;
-  margin-left: ${({ sizeraw, margin }) => margin && (sizeraw / 3 + 8).toString() + 'px'};
+  margin-right: ${({ sizeraw, margin }) => margin && (sizeraw / 3 + 8).toString() + 'px'};
 `
 
-interface DoubleCurrencyLogoProps {
+interface DoubleTokenLogoProps {
   margin?: boolean
   size?: number
-  currency0?: Currency
-  currency1?: Currency
+  a0?: string
+  a1?: string
 }
 
-const HigherLogo = styled(CurrencyLogo)`
-  z-index: 1;
+const HigherLogo = styled(TokenLogo)`
+  z-index: 2;
 `
-const CoveredLogo = styled(CurrencyLogo)<{ sizeraw: number }>`
+const CoveredLogo = styled(TokenLogo)<{ sizeraw: number }>`
   position: absolute;
-  left: ${({ sizeraw }) => '-' + (sizeraw / 2).toString() + 'px'} !important;
+  left: ${({ sizeraw }) => (sizeraw / 2).toString() + 'px'};
 `
 
-export default function DoubleCurrencyLogo({
-  currency0,
-  currency1,
-  size = 16,
-  margin = false,
-}: DoubleCurrencyLogoProps) {
+export default function DoubleTokenLogo({ a0, a1, size = 16, margin = false }: DoubleTokenLogoProps) {
   return (
-    <Wrapper sizeraw={size} margin={margin}>
-      {currency0 && <HigherLogo currency={currency0} size={size.toString() + 'px'} />}
-      {currency1 && <CoveredLogo currency={currency1} size={size.toString() + 'px'} sizeraw={size} />}
-    </Wrapper>
+    <TokenWrapper sizeraw={size} margin={margin}>
+      {a0 && <HigherLogo address={a0} size={size.toString() + 'px'} />}
+      {a1 && <CoveredLogo address={a1} size={size.toString() + 'px'} sizeraw={size} />}
+    </TokenWrapper>
   )
 }

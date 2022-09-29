@@ -1,347 +1,113 @@
-import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
-import { PageName } from 'components/AmplitudeAnalytics/constants'
-import { ElementName, Event, EventName } from 'components/AmplitudeAnalytics/constants'
-import { Trace } from 'components/AmplitudeAnalytics/Trace'
-import { TraceEvent } from 'components/AmplitudeAnalytics/TraceEvent'
-import { ButtonGray, ButtonPrimary, ButtonText } from 'components/Button'
-import { AutoColumn } from 'components/Column'
-import { FlyoutAlignment, NewMenu } from 'components/Menu'
-import PositionList from 'components/PositionList'
-import { RowBetween, RowFixed } from 'components/Row'
-import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
-import { isSupportedChain } from 'constants/chains'
-import { NavBarVariant, useNavBarFlag } from 'featureFlags/flags/navBar'
-import { useV3Positions } from 'hooks/useV3Positions'
-import { AlertTriangle, BookOpen, ChevronDown, ChevronsRight, Inbox, Layers, PlusCircle } from 'react-feather'
+import React, { useContext } from 'react'
+import { ThemeContext } from 'styled-components'
+import { Pair } from 'dexbr-sdk'
 import { Link } from 'react-router-dom'
-import { useToggleWalletModal } from 'state/application/hooks'
-import { useUserHideClosedPositions } from 'state/user/hooks'
-import styled, { css, useTheme } from 'styled-components/macro'
-import { HideSmall, ThemedText } from 'theme'
-import { PositionDetails } from 'types/position'
+import { SwapPoolTabs } from '../../components/NavigationTabs'
 
-import { V2_FACTORY_ADDRESSES } from '../../constants/addresses'
-import CTACards from './CTACards'
-import { LoadingRows } from './styleds'
+import Question from '../../components/QuestionHelper'
+import FullPositionCard from '../../components/PositionCard'
+import { useUserHasLiquidityInAllTokens } from '../../data/V1'
+import { useTokenBalancesWithLoadingIndicator } from '../../state/wallet/hooks'
+import { StyledInternalLink, TYPE } from '../../theme'
+import { Text } from 'rebass'
+import { LightCard } from '../../components/Card'
+import { RowBetween } from '../../components/Row'
+import { ButtonPrimary, ButtonSecondary } from '../../components/Button'
+import { AutoColumn } from '../../components/Column'
 
-const PageWrapper = styled(AutoColumn)<{ navBarFlag: boolean }>`
-  padding: ${({ navBarFlag }) => (navBarFlag ? '68px 8px 0px' : '0px')};
-  max-width: 870px;
-  width: 100%;
-
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
-    max-width: 800px;
-  `};
-
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    max-width: 500px;
-  `};
-
-  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-    padding-top: ${({ navBarFlag }) => (navBarFlag ? '48px' : '0px')};
-  }
-
-  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
-    padding-top: ${({ navBarFlag }) => (navBarFlag ? '20px' : '0px')};
-  }
-`
-const TitleRow = styled(RowBetween)`
-  color: ${({ theme }) => theme.deprecated_text2};
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    flex-wrap: wrap;
-    gap: 12px;
-    width: 100%;
-  `};
-`
-const ButtonRow = styled(RowFixed)`
-  & > *:not(:last-child) {
-    margin-left: 8px;
-  }
-
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-direction: row-reverse;
-  `};
-`
-const Menu = styled(NewMenu)`
-  margin-left: 0;
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    flex: 1 1 auto;
-    width: 49%;
-    right: 0px;
-  `};
-
-  a {
-    width: 100%;
-  }
-`
-const MenuItem = styled.div`
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  font-weight: 500;
-`
-const MoreOptionsButton = styled(ButtonGray)`
-  border-radius: 12px;
-  flex: 1 1 auto;
-  padding: 6px 8px;
-  width: 100%;
-  background-color: ${({ theme }) => theme.deprecated_bg0};
-  margin-right: 8px;
-`
-
-const MoreOptionsText = styled(ThemedText.DeprecatedBody)`
-  align-items: center;
-  display: flex;
-`
-
-const ErrorContainer = styled.div`
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin: auto;
-  max-width: 300px;
-  min-height: 25vh;
-`
-
-const IconStyle = css`
-  width: 48px;
-  height: 48px;
-  margin-bottom: 0.5rem;
-`
-
-const NetworkIcon = styled(AlertTriangle)`
-  ${IconStyle}
-`
-
-const InboxIcon = styled(Inbox)`
-  ${IconStyle}
-`
-
-const ResponsiveButtonPrimary = styled(ButtonPrimary)`
-  border-radius: 12px;
-  padding: 6px 8px;
-  width: fit-content;
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    flex: 1 1 auto;
-    width: 100%;
-  `};
-`
-
-const MainContentWrapper = styled.main`
-  background-color: ${({ theme }) => theme.deprecated_bg0};
-  padding: 8px;
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-`
-
-function PositionsLoadingPlaceholder() {
-  return (
-    <LoadingRows>
-      <div />
-      <div />
-      <div />
-      <div />
-      <div />
-      <div />
-      <div />
-      <div />
-      <div />
-      <div />
-      <div />
-      <div />
-    </LoadingRows>
-  )
-}
-
-function WrongNetworkCard() {
-  const navBarFlag = useNavBarFlag()
-  const navBarFlagEnabled = navBarFlag === NavBarVariant.Enabled
-  const theme = useTheme()
-  return (
-    <>
-      <PageWrapper navBarFlag={navBarFlagEnabled}>
-        <AutoColumn gap="lg" justify="center">
-          <AutoColumn gap="lg" style={{ width: '100%' }}>
-            <TitleRow padding={'0'}>
-              <ThemedText.LargeHeader>
-                <Trans>Pools</Trans>
-              </ThemedText.LargeHeader>
-            </TitleRow>
-
-            <MainContentWrapper>
-              <ErrorContainer>
-                <ThemedText.DeprecatedBody color={theme.deprecated_text3} textAlign="center">
-                  <NetworkIcon strokeWidth={1.2} />
-                  <div data-testid="pools-unsupported-err">
-                    <Trans>Your connected network is unsupported.</Trans>
-                  </div>
-                </ThemedText.DeprecatedBody>
-              </ErrorContainer>
-            </MainContentWrapper>
-          </AutoColumn>
-        </AutoColumn>
-      </PageWrapper>
-      <SwitchLocaleLink />
-    </>
-  )
-}
+import { useActiveWeb3React } from '../../hooks'
+import { usePairs } from '../../data/Reserves'
+import { useAllDummyPairs } from '../../state/user/hooks'
+import AppBody from '../AppBody'
+import { Dots } from '../../components/swap/styleds'
 
 export default function Pool() {
-  const navBarFlag = useNavBarFlag()
-  const navBarFlagEnabled = navBarFlag === NavBarVariant.Enabled
-  const { account, chainId } = useWeb3React()
-  const toggleWalletModal = useToggleWalletModal()
+  const theme = useContext(ThemeContext)
+  const { account } = useActiveWeb3React()
 
-  const theme = useTheme()
-  const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
+  // fetch the user's balances of all tracked V2 LP tokens
+  const v2DummyPairs = useAllDummyPairs()
+  const [v2PairsBalances, fetchingV2PairBalances] = useTokenBalancesWithLoadingIndicator(
+    account ?? undefined,
+    v2DummyPairs?.map(p => p.liquidityToken)
+  )
+  // fetch the reserves for all V2 pools in which the user has a balance
+  const v2DummyPairsWithABalance = v2DummyPairs.filter(dummyPair =>
+    v2PairsBalances[dummyPair.liquidityToken.address]?.greaterThan('0')
+  )
+  const v2Pairs = usePairs(
+    v2DummyPairsWithABalance.map(V2DummyPairWithABalance => [
+      V2DummyPairWithABalance.token0,
+      V2DummyPairWithABalance.token1
+    ])
+  )
+  const v2IsLoading =
+    fetchingV2PairBalances || v2Pairs?.length < v2DummyPairsWithABalance.length || v2Pairs?.some(V2Pair => !V2Pair)
 
-  const { positions, loading: positionsLoading } = useV3Positions(account)
+  const allV2PairsWithLiquidity = v2Pairs
+    .filter((v2Pair): v2Pair is Pair => Boolean(v2Pair))
+    .map(V2Pair => <FullPositionCard key={V2Pair.liquidityToken.address} pair={V2Pair} />)
 
-  if (!isSupportedChain(chainId)) {
-    return <WrongNetworkCard />
-  }
-
-  const [openPositions, closedPositions] = positions?.reduce<[PositionDetails[], PositionDetails[]]>(
-    (acc, p) => {
-      acc[p.liquidity?.isZero() ? 1 : 0].push(p)
-      return acc
-    },
-    [[], []]
-  ) ?? [[], []]
-
-  const filteredPositions = [...openPositions, ...(userHideClosedPositions ? [] : closedPositions)]
-  const showConnectAWallet = Boolean(!account)
-  const showV2Features = Boolean(V2_FACTORY_ADDRESSES[chainId])
-
-  const menuItems = [
-    {
-      content: (
-        <MenuItem>
-          <Trans>Create a pool</Trans>
-          <PlusCircle size={16} />
-        </MenuItem>
-      ),
-      link: '/add/ETH',
-      external: false,
-    },
-    {
-      content: (
-        <MenuItem>
-          <Trans>Migrate</Trans>
-          <ChevronsRight size={16} />
-        </MenuItem>
-      ),
-      link: '/migrate/v2',
-      external: false,
-    },
-    {
-      content: (
-        <MenuItem>
-          <Trans>V2 liquidity</Trans>
-          <Layers size={16} />
-        </MenuItem>
-      ),
-      link: '/pool/v2',
-      external: false,
-    },
-    {
-      content: (
-        <MenuItem>
-          <Trans>Learn</Trans>
-          <BookOpen size={16} />
-        </MenuItem>
-      ),
-      link: 'https://docs.uniswap.org/',
-      external: true,
-    },
-  ]
+  const hasV1Liquidity = useUserHasLiquidityInAllTokens()
 
   return (
-    <Trace page={PageName.POOL_PAGE} shouldLogImpression>
-      <>
-        <PageWrapper navBarFlag={navBarFlagEnabled}>
-          <AutoColumn gap="lg" justify="center">
-            <AutoColumn gap="lg" style={{ width: '100%' }}>
-              <TitleRow padding={'0'}>
-                <ThemedText.LargeHeader>
-                  <Trans>Pools</Trans>
-                </ThemedText.LargeHeader>
-                <ButtonRow>
-                  {showV2Features && (
-                    <Menu
-                      menuItems={menuItems}
-                      flyoutAlignment={FlyoutAlignment.LEFT}
-                      ToggleUI={(props: any) => (
-                        <MoreOptionsButton {...props}>
-                          <MoreOptionsText>
-                            <Trans>More</Trans>
-                            <ChevronDown size={15} />
-                          </MoreOptionsText>
-                        </MoreOptionsButton>
-                      )}
-                    />
-                  )}
-                  <ResponsiveButtonPrimary data-cy="join-pool-button" id="join-pool-button" as={Link} to="/add/ETH">
-                    + <Trans>New Position</Trans>
-                  </ResponsiveButtonPrimary>
-                </ButtonRow>
-              </TitleRow>
+    <>
+      <AppBody>
+        <SwapPoolTabs active={'pool'} />
+        <AutoColumn gap="lg" justify="center">
+          <ButtonPrimary id="join-pool-button" as={Link} style={{ padding: 16 }} to="/add/ETH">
+            <Text fontWeight={500} fontSize={20}>
+              Add Liquidity
+            </Text>
+          </ButtonPrimary>
 
-              <MainContentWrapper>
-                {positionsLoading ? (
-                  <PositionsLoadingPlaceholder />
-                ) : filteredPositions && closedPositions && filteredPositions.length > 0 ? (
-                  <PositionList
-                    positions={filteredPositions}
-                    setUserHideClosedPositions={setUserHideClosedPositions}
-                    userHideClosedPositions={userHideClosedPositions}
-                  />
-                ) : (
-                  <ErrorContainer>
-                    <ThemedText.DeprecatedBody color={theme.deprecated_text3} textAlign="center">
-                      <InboxIcon strokeWidth={1} />
-                      <div>
-                        <Trans>Your active V3 liquidity positions will appear here.</Trans>
-                      </div>
-                    </ThemedText.DeprecatedBody>
-                    {!showConnectAWallet && closedPositions.length > 0 && (
-                      <ButtonText
-                        style={{ marginTop: '.5rem' }}
-                        onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}
-                      >
-                        <Trans>Show closed positions</Trans>
-                      </ButtonText>
-                    )}
-                    {showConnectAWallet && (
-                      <TraceEvent
-                        events={[Event.onClick]}
-                        name={EventName.CONNECT_WALLET_BUTTON_CLICKED}
-                        properties={{ received_swap_quote: false }}
-                        element={ElementName.CONNECT_WALLET_BUTTON}
-                      >
-                        <ButtonPrimary style={{ marginTop: '2em', padding: '8px 16px' }} onClick={toggleWalletModal}>
-                          <Trans>Connect a wallet</Trans>
-                        </ButtonPrimary>
-                      </TraceEvent>
-                    )}
-                  </ErrorContainer>
-                )}
-              </MainContentWrapper>
-              <HideSmall>
-                <CTACards />
-              </HideSmall>
-            </AutoColumn>
+          <AutoColumn gap="12px" style={{ width: '100%' }}>
+            <RowBetween padding={'0 8px'}>
+              <Text color={theme.text1} fontWeight={500}>
+                Your Liquidity
+              </Text>
+              <Question text="When you add liquidity, you are given pool tokens that represent your share. If you don’t see a pool you joined in this list, try importing a pool below." />
+            </RowBetween>
+
+            {!account ? (
+              <LightCard padding="40px">
+                <TYPE.body color={theme.text3} textAlign="center">
+                  Connect to a wallet to view your liquidity.
+                </TYPE.body>
+              </LightCard>
+            ) : v2IsLoading ? (
+              <LightCard padding="40px">
+                <TYPE.body color={theme.text3} textAlign="center">
+                  <Dots>Loading</Dots>
+                </TYPE.body>
+              </LightCard>
+            ) : allV2PairsWithLiquidity?.length > 0 ? (
+              <>{allV2PairsWithLiquidity}</>
+            ) : (
+              <LightCard padding="40px">
+                <TYPE.body color={theme.text3} textAlign="center">
+                  No liquidity found.
+                </TYPE.body>
+              </LightCard>
+            )}
+
+            <div>
+              <Text textAlign="center" fontSize={14} style={{ padding: '.5rem 0 .5rem 0' }}>
+                {hasV1Liquidity ? 'Uniswap V1 liquidity found!' : "Don't see a pool you joined?"}{' '}
+                <StyledInternalLink id="import-pool-link" to={hasV1Liquidity ? '/migrate/v1' : '/find'}>
+                  {hasV1Liquidity ? 'Migrate now.' : 'Import it.'}
+                </StyledInternalLink>
+              </Text>
+            </div>
           </AutoColumn>
-        </PageWrapper>
-        <SwitchLocaleLink />
-      </>
-    </Trace>
+        </AutoColumn>
+      </AppBody>
+
+      {/* <div style={{ display: 'flex', alignItems: 'center', marginTop: '1.5rem' }}>
+        <ButtonSecondary as={Link} style={{ width: 'initial' }} to="/migrate/v1">
+          Migrate V1 Liquidity
+        </ButtonSecondary>
+      </div> */}
+    </>
   )
 }

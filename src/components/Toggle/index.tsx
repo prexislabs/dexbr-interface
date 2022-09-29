@@ -1,94 +1,41 @@
-import { RedesignVariant, useRedesignFlag } from 'featureFlags/flags/redesign'
-import { darken } from 'polished'
-import { useState } from 'react'
-import styled, { keyframes } from 'styled-components/macro'
+import React from 'react'
+import styled from 'styled-components'
 
-const Wrapper = styled.button<{ isActive?: boolean; activeElement?: boolean; redesignFlag: boolean }>`
-  align-items: center;
-  background: ${({ isActive, theme, redesignFlag }) =>
-    redesignFlag && isActive
-      ? theme.accentActionSoft
-      : redesignFlag && !isActive
-      ? 'transparent'
-      : theme.deprecated_bg1};
-  border: ${({ redesignFlag, theme, isActive }) =>
-    redesignFlag && !isActive ? `1px solid ${theme.backgroundOutline}` : 'none'};
-  border-radius: 20px;
-  cursor: pointer;
+const ToggleElement = styled.span<{ isActive?: boolean; isOnSwitch?: boolean }>`
+  padding: 0.25rem 0.5rem;
+  border-radius: 14px;
+  background: ${({ theme, isActive, isOnSwitch }) => (isActive ? (isOnSwitch ? theme.primary1 : theme.text4) : 'none')};
+  color: ${({ theme, isActive, isOnSwitch }) => (isActive ? (isOnSwitch ? theme.white : theme.text2) : theme.text3)};
+  font-size: 0.825rem;
+  font-weight: 400;
+`
+
+const StyledToggle = styled.a<{ isActive?: boolean; activeElement?: boolean }>`
+  border-radius: 16px;
+  border: 1px solid ${({ theme, isActive }) => (isActive ? theme.primary5 : theme.text4)};
   display: flex;
-  outline: none;
-  padding: ${({ redesignFlag }) => (redesignFlag ? '4px' : '0.4rem 0.4rem')};
   width: fit-content;
-`
-
-const turnOnToggle = keyframes`
-  from {
-    margin-left: 0em;
-    margin-right: 2.2em;
-  }
-  to {
-    margin-left: 2.2em;
-    margin-right: 0em;
-  }
-`
-
-const turnOffToggle = keyframes`
-  from {
-    margin-left: 2.2em;
-    margin-right: 0em;
-  }
-  to {
-    margin-left: 0em;
-    margin-right: 2.2em;
-  }
-`
-
-const ToggleElementHoverStyle = (hasBgColor: boolean, theme: any, isActive?: boolean) =>
-  hasBgColor
-    ? {
-        opacity: '0.8',
-      }
-    : {
-        background: isActive ? darken(0.05, theme.deprecated_primary1) : darken(0.05, theme.deprecated_bg4),
-        color: isActive ? theme.deprecated_white : theme.deprecated_text3,
-      }
-
-const ToggleElement = styled.span<{ isActive?: boolean; bgColor?: string; isInitialToggleLoad?: boolean }>`
-  animation: 0.1s
-    ${({ isActive, isInitialToggleLoad }) => (isInitialToggleLoad ? 'none' : isActive ? turnOnToggle : turnOffToggle)}
-    ease-in;
-  background: ${({ theme, bgColor, isActive }) =>
-    isActive ? bgColor ?? theme.deprecated_primary1 : !!bgColor ? theme.deprecated_bg4 : theme.deprecated_text3};
-  border-radius: 50%;
-  height: 24px;
+  cursor: pointer;
+  text-decoration: none;
   :hover {
-    ${({ bgColor, theme, isActive }) => ToggleElementHoverStyle(!!bgColor, theme, isActive)}
+    text-decoration: none;
   }
-  margin-left: ${({ isActive }) => (isActive ? '2.2em' : '0em')};
-  margin-right: ${({ isActive }) => (!isActive ? '2.2em' : '0em')};
-  width: 24px;
 `
 
-interface ToggleProps {
-  id?: string
-  bgColor?: string
+export interface ToggleProps {
   isActive: boolean
   toggle: () => void
 }
 
-export default function Toggle({ id, bgColor, isActive, toggle }: ToggleProps) {
-  const [isInitialToggleLoad, setIsInitialToggleLoad] = useState(true)
-  const redesignFlag = useRedesignFlag()
-  const redesignFlagEnabled = redesignFlag === RedesignVariant.Enabled
-
-  const switchToggle = () => {
-    toggle()
-    if (isInitialToggleLoad) setIsInitialToggleLoad(false)
-  }
-
+export default function Toggle({ isActive, toggle }: ToggleProps) {
   return (
-    <Wrapper id={id} isActive={isActive} onClick={switchToggle} redesignFlag={redesignFlagEnabled}>
-      <ToggleElement isActive={isActive} bgColor={bgColor} isInitialToggleLoad={isInitialToggleLoad} />
-    </Wrapper>
+    <StyledToggle isActive={isActive} target="_self" onClick={toggle}>
+      <ToggleElement isActive={isActive} isOnSwitch={true}>
+        On
+      </ToggleElement>
+      <ToggleElement isActive={!isActive} isOnSwitch={false}>
+        Off
+      </ToggleElement>
+    </StyledToggle>
   )
 }

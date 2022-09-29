@@ -1,6 +1,5 @@
 import { createStore, Store } from 'redux'
-
-import { Field, selectCurrency } from './actions'
+import { Field, selectToken } from './actions'
 import reducer, { SwapState } from './reducer'
 
 describe('swap reducer', () => {
@@ -8,29 +7,27 @@ describe('swap reducer', () => {
 
   beforeEach(() => {
     store = createStore(reducer, {
-      [Field.OUTPUT]: { currencyId: '' },
-      [Field.INPUT]: { currencyId: '' },
+      [Field.OUTPUT]: { address: '' },
+      [Field.INPUT]: { address: '' },
       typedValue: '',
-      independentField: Field.INPUT,
-      recipient: null,
+      independentField: Field.INPUT
     })
   })
 
   describe('selectToken', () => {
     it('changes token', () => {
       store.dispatch(
-        selectCurrency({
+        selectToken({
           field: Field.OUTPUT,
-          currencyId: '0x0000',
+          address: '0x0000'
         })
       )
 
       expect(store.getState()).toEqual({
-        [Field.OUTPUT]: { currencyId: '0x0000' },
-        [Field.INPUT]: { currencyId: '' },
+        [Field.OUTPUT]: { address: '0x0000' },
+        [Field.INPUT]: { address: '' },
         typedValue: '',
-        independentField: Field.INPUT,
-        recipient: null,
+        independentField: Field.INPUT
       })
     })
   })

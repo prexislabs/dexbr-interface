@@ -1,119 +1,63 @@
-import { Currency } from '@uniswap/sdk-core'
-import { ElementName, Event, EventName } from 'components/AmplitudeAnalytics/constants'
-import { TraceEvent } from 'components/AmplitudeAnalytics/TraceEvent'
-import { getTokenAddress } from 'components/AmplitudeAnalytics/utils'
-import { AutoColumn } from 'components/Column'
-import CurrencyLogo from 'components/CurrencyLogo'
-import { AutoRow } from 'components/Row'
-import { COMMON_BASES } from 'constants/routing'
-import { RedesignVariant, useRedesignFlag } from 'featureFlags/flags/redesign'
-import { useTokenInfoFromActiveList } from 'hooks/useTokenInfoFromActiveList'
+import React from 'react'
 import { Text } from 'rebass'
-import styled from 'styled-components/macro'
-import { currencyId } from 'utils/currencyId'
+import { ChainId, Token } from 'dexbr-sdk'
+import styled from 'styled-components'
 
-const MobileWrapper = styled(AutoColumn)`
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    display: none;
-  `};
-`
+import { SUGGESTED_BASES } from '../../constants'
+import { AutoColumn } from '../Column'
+import QuestionHelper from '../QuestionHelper'
+import { AutoRow } from '../Row'
+import TokenLogo from '../TokenLogo'
 
-const BaseWrapper = styled.div<{ disable?: boolean; redesignFlag?: boolean }>`
-  border: 1px solid
-    ${({ theme, disable, redesignFlag }) =>
-      disable
-        ? redesignFlag
-          ? theme.accentAction
-          : 'transparent'
-        : redesignFlag
-        ? theme.backgroundOutline
-        : theme.deprecated_bg3};
-  border-radius: ${({ redesignFlag }) => (redesignFlag ? '16px' : '10px')};
+const BaseWrapper = styled.div<{ disable?: boolean }>`
+  border: 1px solid ${({ theme, disable }) => (disable ? 'transparent' : theme.bg3)};
+  border-radius: 10px;
   display: flex;
   padding: 6px;
-  padding-right: 12px;
 
   align-items: center;
   :hover {
     cursor: ${({ disable }) => !disable && 'pointer'};
-    background-color: ${({ theme, disable, redesignFlag }) =>
-      (redesignFlag && theme.hoverDefault) || (!disable && theme.deprecated_bg2)};
+    background-color: ${({ theme, disable }) => !disable && theme.bg2};
   }
 
-  color: ${({ theme, disable, redesignFlag }) =>
-    disable && (redesignFlag ? theme.accentAction : theme.deprecated_text3)};
-  background-color: ${({ theme, disable, redesignFlag }) =>
-    disable && (redesignFlag ? theme.accentActionSoft : theme.deprecated_bg3)};
-  filter: ${({ disable, redesignFlag }) => disable && !redesignFlag && 'grayscale(1)'};
+  background-color: ${({ theme, disable }) => disable && theme.bg3};
+  opacity: ${({ disable }) => disable && '0.4'};
 `
-
-const formatAnalyticsEventProperties = (currency: Currency, searchQuery: string, isAddressSearch: string | false) => ({
-  token_symbol: currency?.symbol,
-  token_chain_id: currency?.chainId,
-  token_address: getTokenAddress(currency),
-  is_suggested_token: true,
-  is_selected_from_list: false,
-  is_imported_by_user: false,
-  ...(isAddressSearch === false
-    ? { search_token_symbol_input: searchQuery }
-    : { search_token_address_input: isAddressSearch }),
-})
 
 export default function CommonBases({
   chainId,
   onSelect,
-  selectedCurrency,
-  searchQuery,
-  isAddressSearch,
+  selectedTokenAddress
 }: {
-  chainId?: number
-  selectedCurrency?: Currency | null
-  onSelect: (currency: Currency) => void
-  searchQuery: string
-  isAddressSearch: string | false
+  chainId: ChainId
+  selectedTokenAddress: string
+  onSelect: (tokenAddress: string) => void
 }) {
-  const bases = typeof chainId !== 'undefined' ? COMMON_BASES[chainId] ?? [] : []
-  const redesignFlag = useRedesignFlag()
-  const redesignFlagEnabled = redesignFlag === RedesignVariant.Enabled
-
-  return bases.length > 0 ? (
-    <MobileWrapper gap="md">
+  return (
+    <AutoColumn gap="md">
+      <AutoRow>
+        <Text fontWeight={500} fontSize={14}>
+          Common bases
+        </Text>
+        <QuestionHelper text="These tokens are commonly paired with other tokens." />
+      </AutoRow>
       <AutoRow gap="4px">
-        {bases.map((currency: Currency) => {
-          const isSelected = selectedCurrency?.equals(currency)
-
+        {(SUGGESTED_BASES[chainId as ChainId] ?? []).map((token: Token) => {
           return (
-            <TraceEvent
-              events={[Event.onClick, Event.onKeyPress]}
-              name={EventName.TOKEN_SELECTED}
-              properties={formatAnalyticsEventProperties(currency, searchQuery, isAddressSearch)}
-              element={ElementName.COMMON_BASES_CURRENCY_BUTTON}
-              key={currencyId(currency)}
+            <BaseWrapper
+              onClick={() => selectedTokenAddress !== token.address && onSelect(token.address)}
+              disable={selectedTokenAddress === token.address}
+              key={token.address}
             >
-              <BaseWrapper
-                tabIndex={0}
-                onKeyPress={(e) => !isSelected && e.key === 'Enter' && onSelect(currency)}
-                onClick={() => !isSelected && onSelect(currency)}
-                disable={isSelected}
-                redesignFlag={redesignFlagEnabled}
-                key={currencyId(currency)}
-              >
-                <CurrencyLogoFromList currency={currency} />
-                <Text fontWeight={500} fontSize={16}>
-                  {currency.symbol}
-                </Text>
-              </BaseWrapper>
-            </TraceEvent>
+              <TokenLogo address={token.address} style={{ marginRight: 8 }} />
+              <Text fontWeight={500} fontSize={16}>
+                {token.symbol}
+              </Text>
+            </BaseWrapper>
           )
         })}
       </AutoRow>
-    </MobileWrapper>
-  ) : null
-}
-
-/** helper component to retrieve a base currency from the active token lists */
-function CurrencyLogoFromList({ currency }: { currency: Currency }) {
-  const token = useTokenInfoFromActiveList(currency)
-
-  return <CurrencyLogo currency={token} style={{ marginRight: 8 }} />
+    </AutoColumn>
+  )
 }

@@ -1,164 +1,123 @@
-import { Trans } from '@lingui/macro'
-import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
-import { ElementName, Event, EventName } from 'components/AmplitudeAnalytics/constants'
-import { TraceEvent } from 'components/AmplitudeAnalytics/TraceEvent'
-import {
-  formatPercentInBasisPointsNumber,
-  formatPercentNumber,
-  formatToDecimal,
-  getDurationFromDateMilliseconds,
-  getDurationUntilTimestampSeconds,
-  getTokenAddress,
-} from 'components/AmplitudeAnalytics/utils'
-import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { ReactNode } from 'react'
+import { Percent, TokenAmount, Trade, TradeType } from 'dexbr-sdk'
+import React, { useContext } from 'react'
+import { Repeat } from 'react-feather'
 import { Text } from 'rebass'
-import { InterfaceTrade } from 'state/routing/types'
-import { useClientSideRouter, useUserSlippageTolerance } from 'state/user/hooks'
-import { computeRealizedPriceImpact } from 'utils/prices'
-
+import { ThemeContext } from 'styled-components'
+import { Field } from '../../state/swap/actions'
+import { TYPE } from '../../theme'
+import { formatExecutionPrice } from '../../utils/prices'
 import { ButtonError } from '../Button'
-import { AutoRow } from '../Row'
-import { SwapCallbackError } from './styleds'
-import { getTokenPath, RoutingDiagramEntry } from './SwapRoute'
-
-interface AnalyticsEventProps {
-  trade: InterfaceTrade<Currency, Currency, TradeType>
-  hash: string | undefined
-  allowedSlippage: Percent
-  transactionDeadlineSecondsSinceEpoch: number | undefined
-  isAutoSlippage: boolean
-  isAutoRouterApi: boolean
-  swapQuoteReceivedDate: Date | undefined
-  routes: RoutingDiagramEntry[]
-  fiatValueInput?: CurrencyAmount<Token> | null
-  fiatValueOutput?: CurrencyAmount<Token> | null
-}
-
-const formatRoutesEventProperties = (routes: RoutingDiagramEntry[]) => {
-  const routesEventProperties: Record<string, any[]> = {
-    routes_percentages: [],
-    routes_protocols: [],
-  }
-
-  routes.forEach((route, index) => {
-    routesEventProperties['routes_percentages'].push(formatPercentNumber(route.percent))
-    routesEventProperties['routes_protocols'].push(route.protocol)
-    routesEventProperties[`route_${index}_input_currency_symbols`] = route.path.map(
-      (pathStep) => pathStep[0].symbol ?? ''
-    )
-    routesEventProperties[`route_${index}_output_currency_symbols`] = route.path.map(
-      (pathStep) => pathStep[1].symbol ?? ''
-    )
-    routesEventProperties[`route_${index}_input_currency_addresses`] = route.path.map((pathStep) =>
-      getTokenAddress(pathStep[0])
-    )
-    routesEventProperties[`route_${index}_output_currency_addresses`] = route.path.map((pathStep) =>
-      getTokenAddress(pathStep[1])
-    )
-    routesEventProperties[`route_${index}_fee_amounts_hundredths_of_bps`] = route.path.map((pathStep) => pathStep[2])
-  })
-
-  return routesEventProperties
-}
-
-const formatAnalyticsEventProperties = ({
-  trade,
-  hash,
-  allowedSlippage,
-  transactionDeadlineSecondsSinceEpoch,
-  isAutoSlippage,
-  isAutoRouterApi,
-  swapQuoteReceivedDate,
-  routes,
-  fiatValueInput,
-  fiatValueOutput,
-}: AnalyticsEventProps) => ({
-  estimated_network_fee_usd: trade.gasUseEstimateUSD ? formatToDecimal(trade.gasUseEstimateUSD, 2) : undefined,
-  transaction_hash: hash,
-  transaction_deadline_seconds: getDurationUntilTimestampSeconds(transactionDeadlineSecondsSinceEpoch),
-  token_in_address: getTokenAddress(trade.inputAmount.currency),
-  token_out_address: getTokenAddress(trade.outputAmount.currency),
-  token_in_symbol: trade.inputAmount.currency.symbol,
-  token_out_symbol: trade.outputAmount.currency.symbol,
-  token_in_amount: formatToDecimal(trade.inputAmount, trade.inputAmount.currency.decimals),
-  token_out_amount: formatToDecimal(trade.outputAmount, trade.outputAmount.currency.decimals),
-  token_in_amount_usd: fiatValueInput ? parseFloat(fiatValueInput.toFixed(2)) : undefined,
-  token_out_amount_usd: fiatValueOutput ? parseFloat(fiatValueOutput.toFixed(2)) : undefined,
-  price_impact_basis_points: formatPercentInBasisPointsNumber(computeRealizedPriceImpact(trade)),
-  allowed_slippage_basis_points: formatPercentInBasisPointsNumber(allowedSlippage),
-  is_auto_router_api: isAutoRouterApi,
-  is_auto_slippage: isAutoSlippage,
-  chain_id:
-    trade.inputAmount.currency.chainId === trade.outputAmount.currency.chainId
-      ? trade.inputAmount.currency.chainId
-      : undefined,
-  duration_from_first_quote_to_swap_submission_milliseconds: swapQuoteReceivedDate
-    ? getDurationFromDateMilliseconds(swapQuoteReceivedDate)
-    : undefined,
-  swap_quote_block_number: trade.blockNumber,
-  ...formatRoutesEventProperties(routes),
-})
+import { AutoColumn } from '../Column'
+import QuestionHelper from '../QuestionHelper'
+import { AutoRow, RowBetween, RowFixed } from '../Row'
+import FormattedPriceImpact from './FormattedPriceImpact'
+import { StyledBalanceMaxMini } from './styleds'
 
 export default function SwapModalFooter({
   trade,
-  allowedSlippage,
-  hash,
-  onConfirm,
-  swapErrorMessage,
-  disabledConfirm,
-  swapQuoteReceivedDate,
-  fiatValueInput,
-  fiatValueOutput,
+  showInverted,
+  setShowInverted,
+  severity,
+  slippageAdjustedAmounts,
+  onSwap,
+  parsedAmounts,
+  realizedLPFee,
+  priceImpactWithoutFee,
+  confirmText
 }: {
-  trade: InterfaceTrade<Currency, Currency, TradeType>
-  hash: string | undefined
-  allowedSlippage: Percent
-  onConfirm: () => void
-  swapErrorMessage: ReactNode | undefined
-  disabledConfirm: boolean
-  swapQuoteReceivedDate: Date | undefined
-  fiatValueInput?: CurrencyAmount<Token> | null
-  fiatValueOutput?: CurrencyAmount<Token> | null
+  trade?: Trade
+  showInverted: boolean
+  setShowInverted: (inverted: boolean) => void
+  severity: number
+  slippageAdjustedAmounts?: { [field in Field]?: TokenAmount }
+  onSwap: () => any
+  parsedAmounts?: { [field in Field]?: TokenAmount }
+  realizedLPFee?: TokenAmount
+  priceImpactWithoutFee?: Percent
+  confirmText: string
 }) {
-  const transactionDeadlineSecondsSinceEpoch = useTransactionDeadline()?.toNumber() // in seconds since epoch
-  const isAutoSlippage = useUserSlippageTolerance()[0] === 'auto'
-  const [clientSideRouter] = useClientSideRouter()
-  const routes = getTokenPath(trade)
+  const theme = useContext(ThemeContext)
+
+  if (!trade) {
+    return null
+  }
 
   return (
     <>
-      <AutoRow>
-        <TraceEvent
-          events={[Event.onClick]}
-          element={ElementName.CONFIRM_SWAP_BUTTON}
-          name={EventName.SWAP_SUBMITTED_BUTTON_CLICKED}
-          properties={formatAnalyticsEventProperties({
-            trade,
-            hash,
-            allowedSlippage,
-            transactionDeadlineSecondsSinceEpoch,
-            isAutoSlippage,
-            isAutoRouterApi: !clientSideRouter,
-            swapQuoteReceivedDate,
-            routes,
-            fiatValueInput,
-            fiatValueOutput,
-          })}
-        >
-          <ButtonError
-            onClick={onConfirm}
-            disabled={disabledConfirm}
-            style={{ margin: '10px 0 0 0' }}
-            id={ElementName.CONFIRM_SWAP_BUTTON}
+      <AutoColumn gap="0px">
+        <RowBetween align="center">
+          <Text fontWeight={400} fontSize={14} color={theme.text2}>
+            Price
+          </Text>
+          <Text
+            fontWeight={500}
+            fontSize={14}
+            color={theme.text1}
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              display: 'flex',
+              textAlign: 'right',
+              paddingLeft: '10px'
+            }}
           >
-            <Text fontSize={20} fontWeight={500}>
-              <Trans>Confirm Swap</Trans>
-            </Text>
-          </ButtonError>
-        </TraceEvent>
+            {formatExecutionPrice(trade, showInverted)}
+            <StyledBalanceMaxMini onClick={() => setShowInverted(!showInverted)}>
+              <Repeat size={14} />
+            </StyledBalanceMaxMini>
+          </Text>
+        </RowBetween>
 
-        {swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
+              {trade?.tradeType === TradeType.EXACT_INPUT ? 'Minimum sent' : 'Maximum sold'}
+            </TYPE.black>
+            <QuestionHelper text="Your transaction will revert if there is a large, unfavorable price movement before it is confirmed." />
+          </RowFixed>
+          <RowFixed>
+            <TYPE.black fontSize={14}>
+              {trade?.tradeType === TradeType.EXACT_INPUT
+                ? slippageAdjustedAmounts[Field.OUTPUT]?.toSignificant(4) ?? '-'
+                : slippageAdjustedAmounts[Field.INPUT]?.toSignificant(4) ?? '-'}
+            </TYPE.black>
+            {parsedAmounts[Field.OUTPUT] && parsedAmounts[Field.INPUT] && (
+              <TYPE.black fontSize={14} marginLeft={'4px'}>
+                {trade?.tradeType === TradeType.EXACT_INPUT
+                  ? parsedAmounts[Field.OUTPUT]?.token?.symbol
+                  : parsedAmounts[Field.INPUT]?.token?.symbol}
+              </TYPE.black>
+            )}
+          </RowFixed>
+        </RowBetween>
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black color={theme.text2} fontSize={14} fontWeight={400}>
+              Price Impact
+            </TYPE.black>
+            <QuestionHelper text="The difference between the market price and your price due to trade size." />
+          </RowFixed>
+          <FormattedPriceImpact priceImpact={priceImpactWithoutFee} />
+        </RowBetween>
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
+              Liquidity Provider Fee
+            </TYPE.black>
+            <QuestionHelper text="A portion of each trade (0.30%) goes to liquidity providers as a protocol incentive." />
+          </RowFixed>
+          <TYPE.black fontSize={14}>
+            {realizedLPFee ? realizedLPFee?.toSignificant(6) + ' ' + trade?.inputAmount?.token?.symbol : '-'}
+          </TYPE.black>
+        </RowBetween>
+      </AutoColumn>
+
+      <AutoRow>
+        <ButtonError onClick={onSwap} error={severity > 2} style={{ margin: '10px 0 0 0' }} id="confirm-swap-or-send">
+          <Text fontSize={20} fontWeight={500}>
+            {confirmText}
+          </Text>
+        </ButtonError>
       </AutoRow>
     </>
   )
