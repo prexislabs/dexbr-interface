@@ -70,27 +70,27 @@ export default function TokenList({
               <FadedSpan>
                 {customAdded ? (
                   <TYPE.main fontWeight={500}>
-                    Added by user
+                    {t('Added by user')}
                     <LinkStyledButton
                       onClick={event => {
                         event.stopPropagation()
                         removeToken(chainId, address)
                       }}
                     >
-                      (Remove)
+                      ({t('Remove')})
                     </LinkStyledButton>
                   </TYPE.main>
                 ) : null}
                 {!isDefault && !customAdded ? (
                   <TYPE.main fontWeight={500}>
-                    Found by address
+                    {t('Found by address')}
                     <LinkStyledButton
                       onClick={event => {
                         event.stopPropagation()
                         addToken(token)
                       }}
                     >
-                      (Add)
+                      ({t('Add')})
                     </LinkStyledButton>
                   </TYPE.main>
                 ) : null}
@@ -103,7 +103,7 @@ export default function TokenList({
                 {zeroBalance && showSendWithSwap ? (
                   <ButtonSecondary padding={'4px 8px'}>
                     <Text textAlign="center" fontWeight={500} fontSize={14} color={theme.primary1}>
-                      Send With Swap
+                    {t('Send With Swap')}
                     </Text>
                   </ButtonSecondary>
                 ) : balance ? (

@@ -24,6 +24,8 @@ import { AddressZero } from '@ethersproject/constants'
 import { Dots } from '../../components/swap/styleds'
 import { Contract } from '@ethersproject/contracts'
 import { useTotalSupply } from '../../data/TotalSupply'
+import { useTranslation } from 'react-i18next'
+
 
 const WEI_DENOM = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(18))
 const ZERO = JSBI.BigInt(0)
@@ -93,10 +95,13 @@ function V1PairRemoval({
 
   const isSuccessfullyRemoved = !!pendingRemovalHash && !!noLiquidityTokens
 
+  const { t } = useTranslation()
+
+
   return (
     <AutoColumn gap="20px">
       <TYPE.body my={9} style={{ fontWeight: 400 }}>
-        This tool will remove your V1 liquidity and send the underlying assets to your wallet.
+        {t('This tool will remove your V1 liquidity and send the underlying assets to your wallet.')}
       </TYPE.body>
 
       <LightCard>
@@ -113,7 +118,7 @@ function V1PairRemoval({
             disabled={isSuccessfullyRemoved || noLiquidityTokens || isRemovalPending || confirmingRemoval}
             onClick={remove}
           >
-            {isSuccessfullyRemoved ? 'Success' : isRemovalPending ? <Dots>Removing</Dots> : 'Remove'}
+            {isSuccessfullyRemoved ? t('Success') : isRemovalPending ? <Dots>{t('Removing')}</Dots> : t('Remove')}
           </ButtonConfirmed>
         </div>
       </LightCard>
@@ -133,6 +138,8 @@ export default function RemoveV1Exchange({
 }: RouteComponentProps<{ address: string }>) {
   const validatedAddress = isAddress(address)
   const { chainId, account } = useActiveWeb3React()
+  const { t } = useTranslation()
+
 
   const exchangeContract = useV1ExchangeContract(validatedAddress ? validatedAddress : undefined, true)
   const tokenAddress = useSingleCallResult(exchangeContract, 'tokenAddress', undefined, NEVER_RELOAD)?.result?.[0]
@@ -153,19 +160,20 @@ export default function RemoveV1Exchange({
     return <Redirect to="/migrate/v1" />
   }
 
+
   return (
     <BodyWrapper style={{ padding: 24 }}>
       <AutoColumn gap="16px">
         <AutoRow style={{ alignItems: 'center', justifyContent: 'space-between' }} gap="8px">
           <BackArrow to="/migrate/v1" />
-          <TYPE.mediumHeader>Remove V1 Liquidity</TYPE.mediumHeader>
+          <TYPE.mediumHeader>{t('Remove V1 Liquidity')}</TYPE.mediumHeader>
           <div>
-            <QuestionHelper text="Remove your Uniswap V1 liquidity tokens." />
+            <QuestionHelper text={t('Remove your Uniswap V1 liquidity tokens.')} />
           </div>
         </AutoRow>
 
         {!account ? (
-          <TYPE.largeHeader>You must connect an account.</TYPE.largeHeader>
+          <TYPE.largeHeader>{t('You must connect an account.')}</TYPE.largeHeader>
         ) : userLiquidityBalance && token ? (
           <V1PairRemoval
             exchangeContract={exchangeContract}
@@ -173,7 +181,7 @@ export default function RemoveV1Exchange({
             token={token}
           />
         ) : (
-          <EmptyState message="Loading..." />
+          <EmptyState message={t('Loading...')} />
         )}
       </AutoColumn>
     </BodyWrapper>

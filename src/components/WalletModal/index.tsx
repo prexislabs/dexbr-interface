@@ -17,6 +17,8 @@ import { ReactComponent as Close } from '../../assets/images/x.svg'
 import { injected, fortmatic, portis } from '../../connectors'
 import { OVERLAY_READY } from '../../connectors/Fortmatic'
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector'
+import { useTranslation } from 'react-i18next'
+
 
 const CloseIcon = styled.div`
   position: absolute;
@@ -136,6 +138,8 @@ export default function WalletModal({
   const toggleWalletModal = useWalletModalToggle()
 
   const previousAccount = usePrevious(account)
+  const { t } = useTranslation()
+
 
   // close on connection, when logged out before
   useEffect(() => {
@@ -224,7 +228,7 @@ export default function WalletModal({
               link={option.href}
               header={option.name}
               subheader={null}
-              icon={MetamaskIcon} // Parameterize if using a new wallet.
+              icon={require('../../assets/images/' + option.iconName)}
             />
           )
         }
@@ -292,12 +296,12 @@ export default function WalletModal({
           <CloseIcon onClick={toggleWalletModal}>
             <CloseColor />
           </CloseIcon>
-          <HeaderRow>{error instanceof UnsupportedChainIdError ? 'Wrong Network' : 'Error connecting'}</HeaderRow>
+          <HeaderRow>{error instanceof UnsupportedChainIdError ? t('Wrong Network') : t('Error connecting')}</HeaderRow>
           <ContentWrapper>
             {error instanceof UnsupportedChainIdError ? (
-              <h5>Please connect to the appropriate Ethereum network.</h5>
+              <h5>{t('Please connect to the appropriate Ethereum network.')}</h5>
             ) : (
-              'Error connecting. Try refreshing the page.'
+              t('Error connecting. Try refreshing the page.')
             )}
           </ContentWrapper>
         </UpperSection>
@@ -327,12 +331,12 @@ export default function WalletModal({
                 setWalletView(WALLET_VIEWS.ACCOUNT)
               }}
             >
-              Back
+              {t('Back')}
             </HoverText>
           </HeaderRow>
         ) : (
           <HeaderRow>
-            <HoverText>Connect to a wallet</HoverText>
+            <HoverText>{t('Connect to a wallet')}</HoverText>
           </HeaderRow>
         )}
         <ContentWrapper>
@@ -348,9 +352,9 @@ export default function WalletModal({
           )}
           {walletView !== WALLET_VIEWS.PENDING && (
             <Blurb>
-              <span>New to Ethereum? &nbsp;</span>{' '}
+              <span>{t('New to Ethereum?')} &nbsp;</span>{' '}
               <ExternalLink href="https://ethereum.org/use/#3-what-is-a-wallet-and-which-one-should-i-use">
-                Learn more about wallets
+              {t('Learn more about wallets')}
               </ExternalLink>
             </Blurb>
           )}

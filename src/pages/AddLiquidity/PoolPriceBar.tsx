@@ -7,6 +7,8 @@ import { AutoRow } from '../../components/Row'
 import { ONE_BIPS } from '../../constants'
 import { Field } from '../../state/mint/actions'
 import { TYPE } from '../../theme'
+import { useTranslation } from 'react-i18next'
+
 
 export const PoolPriceBar = ({
   tokens,
@@ -20,6 +22,8 @@ export const PoolPriceBar = ({
   price?: Fraction
 }) => {
   const theme = useContext(ThemeContext)
+  const { t } = useTranslation()
+
   return (
     <AutoColumn gap="md">
       <AutoRow justify="space-around" gap="4px">
@@ -43,7 +47,7 @@ export const PoolPriceBar = ({
             %
           </TYPE.black>
           <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
-            Share of Pool
+            {t('Share of Pool')}
           </Text>
         </AutoColumn>
       </AutoRow>

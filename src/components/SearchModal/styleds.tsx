@@ -32,7 +32,6 @@ export const Input = styled.input`
   background: none;
   border: none;
   outline: none;
-  border-radius: 20px;
   color: ${({ theme }) => theme.text1};
   border-style: solid;
   border: 1px solid ${({ theme }) => theme.bg3};

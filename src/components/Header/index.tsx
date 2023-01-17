@@ -21,6 +21,9 @@ import Row, { RowBetween } from '../Row'
 import Web3Status from '../Web3Status'
 import VersionSwitch from './VersionSwitch'
 
+import { useTranslation } from 'react-i18next'
+
+
 const HeaderFrame = styled.div`
   display: flex;
   align-items: center;
@@ -74,7 +77,6 @@ const AccountElement = styled.div<{ active: boolean }>`
   flex-direction: row;
   align-items: center;
   background-color: ${({ theme, active }) => (!active ? theme.bg1 : theme.bg3)};
-  border-radius: 12px;
   white-space: nowrap;
   width: 100%;
 
@@ -93,19 +95,16 @@ const TestnetWrapper = styled.div`
 const NetworkCard = styled(YellowCard)`
   width: fit-content;
   margin-right: 10px;
-  border-radius: 12px;
   padding: 8px 12px;
 `
 
 const UniIcon = styled.div`
   transition: transform 0.3s ease;
-  :hover {
-    transform: rotate(-5deg);
-  }
   ${`
     img { 
-      width: 10rem;
-      margin-top: -45px;
+      width: 11rem;
+      margin-top: -65px;
+      margin-left: 150px;
     }
   `};
 `
@@ -127,17 +126,65 @@ const BalanceText = styled(Text)`
   `};
 `
 
+const Nav = styled.div`
+  margin-top: 10px;
+  // margin-left: 8%;
+  // @media screen and (max-height: 300px){
+  //   margin-top:40px;
+  // }
+`
+
+const NavA = styled.a`
+  color: white;
+  font-size: 16px;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 0px 30px 20px 0;
+  position: relative;
+  
+  :after{
+    content:"";
+    position: absolute;
+    background-color: #fff;
+    height: 3px;
+    width: 100%;
+    left: 0; 
+    bottom: -20px;
+    visibility: hidden;
+    -webkit-transform: scaleX(0);
+    transform: scaleX(0);
+    -webkit-transition: all 0.3s ease-in-out 0s;
+    transition: all 0.3s ease-in-out 0s;
+  }
+
+  :hover:after{
+    visibility: visible;
+    -webkit-transform: scaleX(1);
+    transform: scaleX(1);
+    
+  }
+`
+const MobileMenu = styled.div`
+display: none;
+cursor: pointer;
+width: 32px;
+  height: 2px;
+  background: #fff;
+  margin: 8px;
+  transition: 0.3s;
+
+`
+
 const NETWORK_LABELS: { [chainId in ChainId]: string | null } = {
   [ChainId.MAINNET]: null,
-  [ChainId.RINKEBY]: 'Rinkeby',
-  [ChainId.ROPSTEN]: 'Ropsten',
-  [ChainId.GÖRLI]: 'Görli',
-  [ChainId.KOVAN]: 'Kovan',
-  [ChainId.TBINANCE]: 'Binance Testnet',
+  [ChainId.GÖRLI]: 'Görli'
 }
+
 
 export default function Header() {
   const { account, chainId } = useActiveWeb3React()
+
+  const { t } = useTranslation()
 
   const userEthBalance = useTokenBalanceTreatingWETHasETH(account, WETH[chainId])
   const [isDark] = useDarkModeManager()
@@ -148,11 +195,22 @@ export default function Header() {
         <HeaderElement>
           <Title href=".">
             <UniIcon>
-              <img src={isDark ? LogoDark : Logo} alt="logo" />
+              <img src={ Logo} alt="logo" />
             </UniIcon>
           </Title>
         </HeaderElement>
+
+  
+    
         <HeaderControls>
+        <Nav>
+          <NavA href="https://www.mpjunior.com.br/labs/dexbr/"> {t('Home')}</NavA>
+          <NavA href="https://www.mpjunior.com.br/labs/dexbr/sobre-nos/">{t('DexBR')}</NavA>
+          <NavA href="https://www.mpjunior.com.br/labs/dexbr/sobre-nos/#">{t('Articles and News')}</NavA>
+          <NavA href="https://www.mpjunior.com.br/labs/dexbr/sobre-nos/#">{t('FAQ')}</NavA>
+          <NavA href="https://www.mpjunior.com.br/labs/dexbr/contato/">{t('Contact')}</NavA>
+        </Nav>
+
           <HeaderElement>
             <TestnetWrapper>
               {!isMobile && NETWORK_LABELS[chainId] && <NetworkCard>{NETWORK_LABELS[chainId]}</NetworkCard>}

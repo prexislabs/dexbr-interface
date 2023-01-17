@@ -1,22 +1,15 @@
 import { ChainId, Token, WETH } from 'dexbr-sdk'
-import KOVAN_TOKENS from './kovan'
-import MAINNET_TOKENS from './mainnet'
-import RINKEBY_TOKENS from './rinkeby'
-import ROPSTEN_TOKENS from './ropsten'
+// import KOVAN_TOKENS from './kovan'
+// import MAINNET_TOKENS from './mainnet'
+// import RINKEBY_TOKENS from './rinkeby'
 import GOERLI_TOKENS from './goerli'
-import TBINANCE_TOKENS from './tbinance'
 
 type AllTokens = Readonly<{ [chainId in ChainId]: Readonly<{ [tokenAddress: string]: Token }> }>
 export const ALL_TOKENS: AllTokens = [
   // WETH on all chains
   ...Object.values(WETH),
   // chain-specific tokens
-  ...MAINNET_TOKENS,
-  ...RINKEBY_TOKENS,
-  ...KOVAN_TOKENS,
-  ...ROPSTEN_TOKENS,
-  ...GOERLI_TOKENS,
-  ...TBINANCE_TOKENS
+  ...GOERLI_TOKENS
 ]
   // remap WETH to ETH
   .map(token => {
@@ -40,10 +33,6 @@ export const ALL_TOKENS: AllTokens = [
     },
     {
       [ChainId.MAINNET]: {},
-      [ChainId.RINKEBY]: {},
-      [ChainId.GÖRLI]: {},
-      [ChainId.ROPSTEN]: {},
-      [ChainId.KOVAN]: {},
-      [ChainId.TBINANCE]: {}
+      [ChainId.GÖRLI]: {}
     }
   )

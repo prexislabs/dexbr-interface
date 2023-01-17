@@ -17,6 +17,8 @@ import { usePairAdder } from '../../state/user/hooks'
 import { useTokenBalanceTreatingWETHasETH } from '../../state/wallet/hooks'
 import { StyledInternalLink } from '../../theme'
 import AppBody from '../AppBody'
+import { useTranslation } from 'react-i18next'
+
 
 enum Fields {
   TOKEN0 = 0,
@@ -24,6 +26,8 @@ enum Fields {
 }
 
 export default function PoolFinder() {
+  const { t } = useTranslation()
+
   const { account, chainId } = useActiveWeb3React()
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
@@ -79,7 +83,7 @@ export default function PoolFinder() {
             </Row>
           ) : (
             <Text fontWeight={500} fontSize={20} marginLeft={'12px'}>
-              Select a Token
+              {t('Select a Token')}
             </Text>
           )}
         </ButtonDropdownLight>
@@ -103,7 +107,7 @@ export default function PoolFinder() {
             </Row>
           ) : (
             <Text fontWeight={500} fontSize={20} marginLeft={'12px'}>
-              Select a Token
+              {t('Select a Token')}
             </Text>
           )}
         </ButtonDropdownLight>
@@ -113,7 +117,7 @@ export default function PoolFinder() {
             style={{ justifyItems: 'center', backgroundColor: '', padding: '12px 0px', borderRadius: '12px' }}
           >
             <Text textAlign="center" fontWeight={500} color="">
-              Pool Found!
+            {t('Pool Found!')}
             </Text>
           </ColumnCenter>
         )}
@@ -124,9 +128,9 @@ export default function PoolFinder() {
           ) : (
             <LightCard padding="45px 10px">
               <AutoColumn gap="sm" justify="center">
-                <Text textAlign="center">You don’t have liquidity in this pool yet.</Text>
+                <Text textAlign="center">{t('You don’t have liquidity in this pool yet.')}</Text>
                 <StyledInternalLink to={`/add/${token0?.address}/${token1?.address}`}>
-                  <Text textAlign="center">Add liquidity.</Text>
+                  <Text textAlign="center">{t('Add liquidity.')}</Text>
                 </StyledInternalLink>
               </AutoColumn>
             </LightCard>
@@ -134,14 +138,14 @@ export default function PoolFinder() {
         ) : newPair ? (
           <LightCard padding="45px 10px">
             <AutoColumn gap="sm" justify="center">
-              <Text textAlign="center">No pool found.</Text>
-              <StyledInternalLink to={`/add/${token0Address}/${token1Address}`}>Create pool?</StyledInternalLink>
+              <Text textAlign="center">{t('No pool found.')}</Text>
+              <StyledInternalLink to={`/add/${token0Address}/${token1Address}`}>{t('Create pool?')}</StyledInternalLink>
             </AutoColumn>
           </LightCard>
         ) : (
           <LightCard padding="45px 10px">
             <Text textAlign="center">
-              {!account ? 'Connect to a wallet to find pools' : 'Select a token to find your liquidity.'}
+              {!account ? t('Connect to a wallet to find pools') : t('Select a token to find your liquidity.')}
             </Text>
           </LightCard>
         )}

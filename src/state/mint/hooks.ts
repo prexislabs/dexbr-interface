@@ -9,6 +9,8 @@ import { useTokenBalancesTreatWETHAsETH } from '../wallet/hooks'
 import { usePair } from '../../data/Reserves'
 import { useTotalSupply } from '../../data/TotalSupply'
 import { tryParseAmount } from '../swap/hooks'
+import { useTranslation } from 'react-i18next'
+
 
 const ZERO = JSBI.BigInt(0)
 
@@ -32,6 +34,8 @@ export function useDerivedMintInfo(
   error?: string
 } {
   const { account } = useActiveWeb3React()
+  const { t } = useTranslation()
+
 
   const { independentField, typedValue, otherTypedValue } = useMintState()
 
@@ -131,25 +135,25 @@ export function useDerivedMintInfo(
 
   let error: string | undefined
   if (!account) {
-    error = 'Connect Wallet'
+    error = t('Connect Wallet')
   }
 
   if (!parsedAmounts[Field.TOKEN_A] || !parsedAmounts[Field.TOKEN_B]) {
-    error = error ?? 'Enter an amount'
+    error = error ?? t('Enter an amount')
   }
 
   if (
     parsedAmounts[Field.TOKEN_A] &&
     tokenBalances?.[Field.TOKEN_A]?.lessThan(parsedAmounts[Field.TOKEN_A] as TokenAmount)
   ) {
-    error = 'Insufficient ' + tokens[Field.TOKEN_A]?.symbol + ' balance'
+    error = t('Insufficient ') + tokens[Field.TOKEN_A]?.symbol + t(' balance')
   }
 
   if (
     parsedAmounts[Field.TOKEN_B] &&
     tokenBalances?.[Field.TOKEN_B]?.lessThan(parsedAmounts[Field.TOKEN_B] as TokenAmount)
   ) {
-    error = 'Insufficient ' + tokens[Field.TOKEN_B]?.symbol + ' balance'
+    error = t('Insufficient ') + tokens[Field.TOKEN_B]?.symbol + t(' balance')
   }
 
   return {

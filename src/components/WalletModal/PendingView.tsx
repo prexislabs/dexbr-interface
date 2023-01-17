@@ -6,7 +6,7 @@ import { SUPPORTED_WALLETS } from '../../constants'
 import { injected } from '../../connectors'
 import { darken } from 'polished'
 import Loader from '../Loader'
-import MetamaskIcon from '../../assets/images/metamask.png'
+import { useTranslation } from 'react-i18next'
 
 const PendingSection = styled.div`
   ${({ theme }) => theme.flexColumnNoWrap};
@@ -26,7 +26,6 @@ const LoadingMessage = styled.div<{ error?: boolean }>`
   ${({ theme }) => theme.flexRowNoWrap};
   align-items: center;
   justify-content: flex-start;
-  border-radius: 12px;
   margin-bottom: 20px;
   color: ${({ theme, error }) => (error ? theme.red1 : 'inherit')};
   border: 1px solid ${({ theme, error }) => (error ? theme.red1 : theme.text4)};
@@ -43,7 +42,6 @@ const ErrorGroup = styled.div`
 `
 
 const ErrorButton = styled.div`
-  border-radius: 8px;
   font-size: 12px;
   color: ${({ theme }) => theme.text1};
   background-color: ${({ theme }) => theme.bg4};
@@ -76,6 +74,8 @@ export default function PendingView({
   tryActivation: (connector: AbstractConnector) => void
 }) {
   const isMetamask = window?.ethereum?.isMetaMask
+  const { t } = useTranslation()
+
 
   return (
     <PendingSection>
@@ -83,20 +83,20 @@ export default function PendingView({
         <LoadingWrapper>
           {error ? (
             <ErrorGroup>
-              <div>Error connecting.</div>
+              <div>{t('Error connecting.')}</div>
               <ErrorButton
                 onClick={() => {
                   setPendingError(false)
                   tryActivation(connector)
                 }}
               >
-                Try Again
+                {t('Try Again')}
               </ErrorButton>
             </ErrorGroup>
           ) : (
             <>
               <StyledLoader />
-              Initializing...
+              {t('Initializing...')}
             </>
           )}
         </LoadingWrapper>
@@ -120,7 +120,7 @@ export default function PendingView({
               color={option.color}
               header={option.name}
               subheader={option.description}
-              icon={MetamaskIcon}
+              icon={require('../../assets/images/' + option.iconName)}
             />
           )
         }

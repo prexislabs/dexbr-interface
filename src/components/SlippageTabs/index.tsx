@@ -7,6 +7,8 @@ import { AutoColumn } from '../Column'
 import { RowBetween, RowFixed } from '../Row'
 
 import { darken } from 'polished'
+import { useTranslation } from 'react-i18next'
+
 
 enum SlippageError {
   InvalidInput = 'InvalidInput',
@@ -22,7 +24,6 @@ const FancyButton = styled.button`
   color: ${({ theme }) => theme.text1};
   align-items: center;
   height: 2rem;
-  border-radius: 36px;
   font-size: 12px;
   width: auto;
   min-width: 3rem;
@@ -43,7 +44,7 @@ const Option = styled(FancyButton)<{ active: boolean }>`
     cursor: pointer;
   }
   background-color: ${({ active, theme }) => active && theme.primary1};
-  color: ${({ active, theme }) => (active ? theme.white : theme.text1)};
+  color: ${({ active, theme }) => (active ? theme.text1 : theme.text1)};
 `
 
 const Input = styled.input`
@@ -74,7 +75,6 @@ const OptionCustom = styled(FancyButton)<{ active?: boolean; warning?: boolean }
     width: 100%;
     height: 100%;
     border: 0px;
-    border-radius: 2rem;
   }
 `
 
@@ -99,6 +99,8 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
 
   const [slippageInput, setSlippageInput] = useState('')
   const [deadlineInput, setDeadlineInput] = useState('')
+  const { t } = useTranslation()
+
 
   const slippageInputIsValid =
     slippageInput === '' || (rawSlippage / 100).toFixed(2) === Number.parseFloat(slippageInput).toFixed(2)
@@ -153,9 +155,9 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
       <AutoColumn gap="sm">
         <RowFixed>
           <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
-            Slippage tolerance
+            {t('Slippage tolerance')}
           </TYPE.black>
-          <QuestionHelper text="Your transaction will revert if the price changes unfavorably by more than this percentage." />
+          <QuestionHelper text={t('Your transaction will revert if the price changes unfavorably by more than this percentage.')} />
         </RowFixed>
         <RowBetween>
           <Option
@@ -218,10 +220,10 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
             }}
           >
             {slippageError === SlippageError.InvalidInput
-              ? 'Enter a valid slippage percentage'
+              ? t('Enter a valid slippage percentage')
               : slippageError === SlippageError.RiskyLow
-              ? 'Your transaction may fail'
-              : 'Your transaction may be frontrun'}
+              ? t('Your transaction may fail')
+              : t('Your transaction may be frontrun')}
           </RowBetween>
         )}
       </AutoColumn>
@@ -229,9 +231,9 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
       <AutoColumn gap="sm">
         <RowFixed>
           <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
-            Transaction deadline
+            {t('Transaction deadline')}
           </TYPE.black>
-          <QuestionHelper text="Your transaction will revert if it is pending for more than this long." />
+          <QuestionHelper text={t('Your transaction will revert if it is pending for more than this long.')} />
         </RowFixed>
         <RowFixed>
           <OptionCustom style={{ width: '80px' }} tabIndex={-1}>
@@ -246,7 +248,7 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
             />
           </OptionCustom>
           <TYPE.body style={{ paddingLeft: '8px' }} fontSize={14}>
-            minutes
+          {t('minutes')}
           </TYPE.body>
         </RowFixed>
       </AutoColumn>

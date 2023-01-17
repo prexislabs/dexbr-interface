@@ -11,7 +11,6 @@ import QuestionHelper from '../QuestionHelper'
 const Tabs = styled.div`
   ${({ theme }) => theme.flexRowNoWrap}
   align-items: center;
-  border-radius: 3rem;
   justify-content: space-evenly;
 `
 
@@ -24,7 +23,6 @@ const StyledNavLink = styled(NavLink).attrs({
   align-items: center;
   justify-content: center;
   height: 3rem;
-  border-radius: 3rem;
   outline: none;
   cursor: pointer;
   text-decoration: none;
@@ -32,7 +30,6 @@ const StyledNavLink = styled(NavLink).attrs({
   font-size: 20px;
 
   &.${activeClassName} {
-    border-radius: 12px;
     font-weight: 500;
     color: ${({ theme }) => theme.text1};
   }
@@ -67,46 +64,51 @@ export function SwapPoolTabs({ active }: { active: 'swap' | 'pool' }) {
 }
 
 export function CreatePoolTabs() {
+  const { t } = useTranslation()
   return (
     <Tabs>
       <RowBetween style={{ padding: '1rem' }}>
         <HistoryLink to="/pool">
           <StyledArrowLeft />
         </HistoryLink>
-        <ActiveText>Create Pool</ActiveText>
-        <QuestionHelper text={'Use this interface to create a new pool.'} />
+        <ActiveText>{t('Create Pool')}</ActiveText>
+        <QuestionHelper text={t('Use this interface to create a new pool.')} />
       </RowBetween>
     </Tabs>
   )
 }
 
 export function FindPoolTabs() {
+  const { t } = useTranslation()
+
   return (
     <Tabs>
       <RowBetween style={{ padding: '1rem' }}>
         <HistoryLink to="/pool">
           <StyledArrowLeft />
         </HistoryLink>
-        <ActiveText>Import Pool</ActiveText>
-        <QuestionHelper text={"Use this tool to find pairs that don't automatically appear in the interface."} />
+        <ActiveText>{t('Import Pool')}</ActiveText>
+        <QuestionHelper text={t('Use this tool to find pairs that dont automatically appear in the interface..')} />
       </RowBetween>
     </Tabs>
   )
 }
 
 export function AddRemoveTabs({ adding }: { adding: boolean }) {
+  const { t } = useTranslation()
+
   return (
     <Tabs>
       <RowBetween style={{ padding: '1rem' }}>
         <HistoryLink to="/pool">
           <StyledArrowLeft />
         </HistoryLink>
-        <ActiveText>{adding ? 'Add' : 'Remove'} Liquidity</ActiveText>
+        <ActiveText>{adding ? t('Add') : t('Remove')} {t('Liquidity')}</ActiveText>
         <QuestionHelper
           text={
             adding
-              ? 'When you add liquidity, you are given pool tokens representing your position. These tokens automatically earn fees proportional to your share of the pool, and can be redeemed at any time.'
-              : 'Removing pool tokens converts your position back into underlying tokens at the current rate, proportional to your share of the pool. Accrued fees are included in the amounts you receive.'
+              ? t('When you add liquidity, you are given pool tokens representing your position. These tokens automatically earn fees proportional to your share of the pool, and can be redeemed at any time.')
+              : t('Removing pool tokens converts your position back into underlying tokens at the current rate, proportional to your share of the pool. Accrued fees are included in the amounts you receive.')
           }
         />
       </RowBetween>

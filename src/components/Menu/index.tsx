@@ -5,6 +5,8 @@ import { ReactComponent as MenuIcon } from '../../assets/images/menu.svg'
 import useToggle from '../../hooks/useToggle'
 
 import { ExternalLink } from '../../theme'
+import { useTranslation } from 'react-i18next'
+
 
 const StyledMenuIcon = styled(MenuIcon)`
   path {
@@ -23,7 +25,6 @@ const StyledMenuButton = styled.button`
   background-color: ${({ theme }) => theme.bg3};
 
   padding: 0.15rem 0.5rem;
-  border-radius: 0.5rem;
 
   :hover,
   :focus {
@@ -52,7 +53,6 @@ const MenuFlyout = styled.span`
   background-color: ${({ theme }) => theme.bg3};
   box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
     0px 24px 32px rgba(0, 0, 0, 0.01);
-  border-radius: 0.5rem;
   padding: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -77,11 +77,11 @@ const MenuItem = styled(ExternalLink)`
   }
 `
 
-const CODE_LINK = 'https://github.com/prexislabs/dexbr-interface'
-
 export default function Menu() {
   const node = useRef<HTMLDivElement>()
   const [open, toggle] = useToggle(false)
+  const { t } = useTranslation()
+
 
   useEffect(() => {
     const handleClickOutside = e => {
@@ -111,19 +111,19 @@ export default function Menu() {
         <MenuFlyout>
           <MenuItem id="link" href="">
             <Info size={14} />
-            About
+            {t('About')}
           </MenuItem>
-          <MenuItem id="link" href="">
+          <MenuItem id="link" href="https://prexis-labs.gitbook.io/dex-br/">
             <BookOpen size={14} />
-            Docs
+            {t('Docs')}
           </MenuItem>
-          <MenuItem id="link" href={CODE_LINK}>
+          <MenuItem id="link" href="https://github.com/prexislabs/dexbr-interface">
             <Code size={14} />
-            Code
+            {t('Code')}
           </MenuItem>
           <MenuItem id="link" href="">
             <MessageCircle size={14} />
-            Discord
+            {t('Discord')}
           </MenuItem>
         </MenuFlyout>
       )}

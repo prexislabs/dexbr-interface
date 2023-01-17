@@ -20,6 +20,9 @@ import { useSettingsMenuOpen, useToggleSettingsMenu } from '../../state/applicat
 import { Text } from 'rebass'
 import Modal from '../Modal'
 
+import { useTranslation } from 'react-i18next'
+
+
 const StyledMenuIcon = styled(Settings)`
   height: 20px;
   width: 20px;
@@ -53,7 +56,6 @@ const StyledMenuButton = styled.button`
   background-color: ${({ theme }) => theme.bg3};
 
   padding: 0.15rem 0.5rem;
-  border-radius: 0.5rem;
 
   :hover,
   :focus {
@@ -88,7 +90,6 @@ const MenuFlyout = styled.span`
   background-color: ${({ theme }) => theme.bg1};
   box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
     0px 24px 32px rgba(0, 0, 0, 0.01);
-  border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
   font-size: 1rem;
@@ -115,7 +116,6 @@ const ModalContentWrapper = styled.div`
   justify-content: center;
   padding: 2rem 0;
   background-color: ${({ theme }) => theme.bg2};
-  border-radius: 20px;
 `
 
 export default function SettingsTab() {
@@ -131,6 +131,9 @@ export default function SettingsTab() {
   const [expertMode, toggleExpertMode] = useExpertModeManager()
 
   const [darkMode, toggleDarkMode] = useDarkModeManager()
+
+  const { t } = useTranslation()
+
 
   // show confirmation view before turning on
   const [showConfirmation, setShowConfirmation] = useState(false)
@@ -162,18 +165,17 @@ export default function SettingsTab() {
             <RowBetween style={{ padding: '0 2rem' }}>
               <div />
               <Text fontWeight={500} fontSize={20}>
-                Are you sure?
+              {t('Are you sure?')}
               </Text>
               <StyledCloseIcon onClick={() => setShowConfirmation(false)} />
             </RowBetween>
             <Break />
             <AutoColumn gap="lg" style={{ padding: '0 2rem' }}>
               <Text fontWeight={500} fontSize={20}>
-                Expert mode turns off the confirm transaction prompt and allows high slippage trades that often result
-                in bad rates and lost funds.
+              {t('Expert mode turns off the confirm transaction prompt and allows high slippage trades that often result in bad rates and lost funds.')}
               </Text>
               <Text fontWeight={600} fontSize={20}>
-                ONLY USE THIS MODE IF YOU KNOW WHAT YOU ARE DOING.
+                {t('ONLY USE THIS MODE IF YOU KNOW WHAT YOU ARE DOING.')}
               </Text>
               <ButtonError
                 error={true}
@@ -186,7 +188,7 @@ export default function SettingsTab() {
                 }}
               >
                 <Text fontSize={20} fontWeight={500}>
-                  Turn On Expert Mode
+                {t('Turn On Expert Mode')}
                 </Text>
               </ButtonError>
             </AutoColumn>
@@ -207,7 +209,7 @@ export default function SettingsTab() {
         <MenuFlyout>
           <AutoColumn gap="md" style={{ padding: '1rem' }}>
             <Text fontWeight={600} fontSize={14}>
-              Transaction Settings
+              {t('Transaction Settings')}
             </Text>
             <SlippageTabs
               rawSlippage={userSlippageTolerance}
@@ -216,14 +218,15 @@ export default function SettingsTab() {
               setDeadline={setDeadline}
             />
             <Text fontWeight={600} fontSize={14}>
-              Interface Settings
+              {t('Interface Settings')}
             </Text>
             <RowBetween>
               <RowFixed>
                 <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
-                  Toggle Expert Mode
+                {t('Toggle Expert Mode')}
                 </TYPE.black>
-                <QuestionHelper text="Bypasses confirmation modals and allows high slippage trades. Use at your own risk." />
+                <QuestionHelper text={t('Bypasses confirmation modals and allows high slippage trades. Use at your own risk.')} />
+                <div ></div>
               </RowFixed>
               <Toggle
                 isActive={expertMode}
@@ -243,7 +246,7 @@ export default function SettingsTab() {
             <RowBetween>
               <RowFixed>
                 <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
-                  Toggle Dark Mode
+                {t('Toggle Dark Mode')}
                 </TYPE.black>
               </RowFixed>
               <Toggle isActive={darkMode} toggle={toggleDarkMode} />

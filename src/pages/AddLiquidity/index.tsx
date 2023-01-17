@@ -35,6 +35,8 @@ import { Dots, Wrapper } from '../Pool/styleds'
 import { ConfirmAddModalBottom } from './ConfirmAddModalBottom'
 import { currencyId } from './currencyId'
 import { PoolPriceBar } from './PoolPriceBar'
+import { useTranslation } from 'react-i18next'
+
 
 function useTokenByCurrencyId(chainId: ChainId | undefined, currencyId: string | undefined): Token | undefined {
   const isETH = currencyId?.toUpperCase() === 'ETH'
@@ -189,11 +191,11 @@ export default function AddLiquidity({
 
           addTransaction(response, {
             summary:
-              'Add ' +
+              t('Add ') +
               parsedAmounts[Field.TOKEN_A]?.toSignificant(3) +
               ' ' +
               tokens[Field.TOKEN_A]?.symbol +
-              ' and ' +
+              t(' and ') +
               parsedAmounts[Field.TOKEN_B]?.toSignificant(3) +
               ' ' +
               tokens[Field.TOKEN_B]?.symbol
@@ -296,6 +298,9 @@ export default function AddLiquidity({
     [tokenA, chainId, history, tokenB, currencyIdA]
   )
 
+  const { t } = useTranslation()
+
+
   return (
     <>
       <AppBody>
@@ -316,7 +321,7 @@ export default function AddLiquidity({
             topContent={() => modalHeader()}
             bottomContent={modalBottom}
             pendingText={pendingText}
-            title={noLiquidity ? 'You are creating a pool' : 'You will receive'}
+            title={noLiquidity ? t('You are creating a pool') : t('You will receive')}
           />
           <AutoColumn gap="20px">
             {noLiquidity && (
@@ -324,13 +329,13 @@ export default function AddLiquidity({
                 <BlueCard>
                   <AutoColumn gap="10px">
                     <TYPE.link fontWeight={600} color={'primaryText1'}>
-                      You are the first liquidity provider.
+                    {t('You are the first liquidity provider.')}
                     </TYPE.link>
                     <TYPE.link fontWeight={400} color={'primaryText1'}>
-                      The ratio of tokens you add will set the price of this pool.
+                      {t('The ratio of tokens you add will set the price of this pool.')}
                     </TYPE.link>
                     <TYPE.link fontWeight={400} color={'primaryText1'}>
-                      Once you are happy with the rate click supply to review.
+                      {t('Once you are happy with the rate click supply to review.')}
                     </TYPE.link>
                   </AutoColumn>
                 </BlueCard>
@@ -372,7 +377,7 @@ export default function AddLiquidity({
                 <GreyCard padding="0px" borderRadius={'20px'}>
                   <RowBetween padding="1rem">
                     <TYPE.subHeader fontWeight={500} fontSize={14}>
-                      {noLiquidity ? 'Initial prices' : 'Prices'} and pool share
+                      {noLiquidity ? t('Initial prices') : t('Prices')} {t('and pool share')}
                     </TYPE.subHeader>
                   </RowBetween>{' '}
                   <LightCard padding="1rem" borderRadius={'20px'}>
@@ -404,9 +409,9 @@ export default function AddLiquidity({
                           width={approvalB !== ApprovalState.APPROVED ? '48%' : '100%'}
                         >
                           {approvalA === ApprovalState.PENDING ? (
-                            <Dots>Approving {tokens[Field.TOKEN_A]?.symbol}</Dots>
+                            <Dots>{t('Approving')} {tokens[Field.TOKEN_A]?.symbol}</Dots>
                           ) : (
-                            'Approve ' + tokens[Field.TOKEN_A]?.symbol
+                            t('Approve ') + tokens[Field.TOKEN_A]?.symbol
                           )}
                         </ButtonPrimary>
                       )}
@@ -417,9 +422,9 @@ export default function AddLiquidity({
                           width={approvalA !== ApprovalState.APPROVED ? '48%' : '100%'}
                         >
                           {approvalB === ApprovalState.PENDING ? (
-                            <Dots>Approving {tokens[Field.TOKEN_B]?.symbol}</Dots>
+                            <Dots>{t('Approving')} {tokens[Field.TOKEN_B]?.symbol}</Dots>
                           ) : (
-                            'Approve ' + tokens[Field.TOKEN_B]?.symbol
+                            t('Approve ') + tokens[Field.TOKEN_B]?.symbol
                           )}
                         </ButtonPrimary>
                       )}
@@ -433,7 +438,7 @@ export default function AddLiquidity({
                   error={!isValid && !!parsedAmounts[Field.TOKEN_A] && !!parsedAmounts[Field.TOKEN_B]}
                 >
                   <Text fontSize={20} fontWeight={500}>
-                    {error ?? 'Supply'}
+                    {error ?? t('Supply')}
                   </Text>
                 </ButtonError>
               </AutoColumn>

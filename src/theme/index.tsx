@@ -9,6 +9,9 @@ import styled, {
 import { useIsDarkMode } from '../state/user/hooks'
 import { Text, TextProps } from 'rebass'
 import { Colors } from './styled'
+import 'animate.css';
+
+import Fundo from '../assets/images/fundo.png'
 
 export * from './components'
 
@@ -41,7 +44,7 @@ export function colors(darkMode: boolean): Colors {
     black,
 
     // text
-    text1: darkMode ? '#FFFFFF' : '#000000',
+    text1: darkMode ? '#FFFFFF' : '#000000ad',
     text2: darkMode ? '#C3C5CB' : '#565A69',
     text3: darkMode ? '#6C7284' : '#888D9B',
     text4: darkMode ? '#565A69' : '#C3C5CB',
@@ -55,21 +58,21 @@ export function colors(darkMode: boolean): Colors {
     bg5: darkMode ? '#565A69' : '#888D9B',
 
     //specialty colors
-    modalBG: darkMode ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.6)',
-    advancedBG: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.6)',
+    modalBG: darkMode ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.85)',
+    advancedBG: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.1)',
 
     //primary colors
-    primary1: darkMode ? '#2172E5' : '#ff007a',
+    primary1: darkMode ? '#2172E5' : '#ffc000',
     primary2: darkMode ? '#3680E7' : '#FF8CC3',
     primary3: darkMode ? '#4D8FEA' : '#FF99C9',
-    primary4: darkMode ? '#376bad70' : '#F6DDE8',
-    primary5: darkMode ? '#153d6f70' : '#FDEAF1',
+    primary4: darkMode ? '#153d6f70' : '#fff',
+    primary5: darkMode ? '#153d6f70' : '#ffc000',
 
     // color text
-    primaryText1: darkMode ? '#6da8ff' : '#ff007a',
+    primaryText1: darkMode ? '#6da8ff' : '#000000ad',
 
     // secondary colors
-    secondary1: darkMode ? '#2172E5' : '#ff007a',
+    secondary1: darkMode ? '#2172E5' : '#ffc00052',
     secondary2: darkMode ? '#17000b26' : '#F6DDE8',
     secondary3: darkMode ? '#17000b26' : '#FDEAF1',
 
@@ -145,7 +148,7 @@ export const TYPE = {
     return <TextWrapper fontWeight={500} fontSize={20} {...props} />
   },
   subHeader(props: TextProps) {
-    return <TextWrapper fontWeight={400} fontSize={14} {...props} />
+    return <TextWrapper fontWeight={400} fontSize={14} color={'black'} {...props} />
   },
   blue(props: TextProps) {
     return <TextWrapper fontWeight={500} color={'primary1'} {...props} />
@@ -160,7 +163,7 @@ export const TYPE = {
     return <TextWrapper fontWeight={500} color={'bg3'} {...props} />
   },
   italic(props: TextProps) {
-    return <TextWrapper fontWeight={500} fontSize={12} fontStyle={'italic'} color={'text2'} {...props} />
+    return <TextWrapper fontWeight={500} fontSize={12} fontStyle={'italic'} color={'black'} {...props} />
   },
   error({ error, ...props }: { error: boolean } & TextProps) {
     return <TextWrapper fontWeight={500} color={error ? 'red1' : 'text2'} {...props} />
@@ -209,12 +212,11 @@ html {
 
 body {
   min-height: 100vh;
-  background-position: 0 -30vh;
+  
   background-repeat: no-repeat;
-  background-image: ${({ theme }) =>
-    `radial-gradient(50% 50% at 50% 50%, ${transparentize(0.9, theme.primary1)} 0%, ${transparentize(
-      1,
-      theme.bg1
-    )} 100%)`};
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center center;
+  background-image: url(${Fundo});
 }
 `

@@ -27,6 +27,8 @@ import { EmptyState } from './EmptyState'
 import TokenLogo from '../../components/TokenLogo'
 import { AddressZero } from '@ethersproject/constants'
 import { Text } from 'rebass'
+import { useTranslation } from 'react-i18next'
+
 
 const POOL_TOKEN_AMOUNT_MIN = new Fraction(JSBI.BigInt(1), JSBI.BigInt(1000000))
 const WEI_DENOM = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(18))
@@ -195,12 +197,13 @@ function V1PairMigration({ liquidityTokenAmount, token }: { liquidityTokenAmount
   const largePriceDifference = !!priceDifferenceAbs && !priceDifferenceAbs.lessThan(JSBI.BigInt(5))
 
   const isSuccessfullyMigrated = !!pendingMigrationHash && !!noLiquidityTokens
+  const { t } = useTranslation()
+
 
   return (
     <AutoColumn gap="20px">
       <TYPE.body my={9} style={{ fontWeight: 400 }}>
-        This tool will safely migrate your V1 liquidity to V2 with minimal price risk. The process is completely
-        trustless thanks to the{' '}
+        {t('This tool will safely migrate your V1 liquidity to V2 with minimal price risk. The process is completely trustless thanks to the')}{' '}
         <ExternalLink href={getEtherscanLink(chainId, MIGRATOR_ADDRESS, 'address')}>
           <TYPE.blue display="inline">Uniswap migration contract↗</TYPE.blue>
         </ExternalLink>
@@ -210,8 +213,7 @@ function V1PairMigration({ liquidityTokenAmount, token }: { liquidityTokenAmount
       {!isFirstLiquidityProvider && largePriceDifference ? (
         <YellowCard>
           <TYPE.body style={{ marginBottom: 8, fontWeight: 400 }}>
-            It{"'"}s best to deposit liquidity into Uniswap V2 at a price you believe is correct. If the V2 price seems
-            incorrect, you can either make a swap to move the price or wait for someone else to do so.
+            It{"'"}s best to deposit liquidity into Uniswap V2 at a price you believe is correct. If the V2 price seems incorrect, you can either make a swap to move the price or wait for someone else to do so.
           </TYPE.body>
           <AutoColumn gap="8px">
             <RowBetween>
@@ -241,7 +243,7 @@ function V1PairMigration({ liquidityTokenAmount, token }: { liquidityTokenAmount
             </RowBetween>
 
             <RowBetween>
-              <TYPE.body color="inherit">Price Difference:</TYPE.body>
+              <TYPE.body color="inherit">{t('Price Difference:')}</TYPE.body>
               <TYPE.black color="inherit">{priceDifferenceAbs.toSignificant(4)}%</TYPE.black>
             </RowBetween>
           </AutoColumn>
@@ -251,8 +253,7 @@ function V1PairMigration({ liquidityTokenAmount, token }: { liquidityTokenAmount
       {isFirstLiquidityProvider && (
         <PinkCard>
           <TYPE.body style={{ marginBottom: 8, fontWeight: 400 }}>
-            You are the first liquidity provider for this pair on Uniswap V2. Your liquidity will be migrated at the
-            current V1 price. Your transaction cost also includes the gas to create the pool.
+          {t('You are the first liquidity provider for this pair on Uniswap V2. Your liquidity will be migrated at the current V1 price. Your transaction cost also includes the gas to create the pool.')}
           </TYPE.body>
 
           <AutoColumn gap="8px">
@@ -288,11 +289,11 @@ function V1PairMigration({ liquidityTokenAmount, token }: { liquidityTokenAmount
               onClick={approve}
             >
               {approval === ApprovalState.PENDING ? (
-                <Dots>Approving</Dots>
+                <Dots>{t('Approving')}</Dots>
               ) : approval === ApprovalState.APPROVED ? (
-                'Approved'
+                t('Approved')
               ) : (
-                'Approve'
+                t('Approve')
               )}
             </ButtonConfirmed>
           </AutoColumn>
@@ -308,7 +309,7 @@ function V1PairMigration({ liquidityTokenAmount, token }: { liquidityTokenAmount
               }
               onClick={migrate}
             >
-              {isSuccessfullyMigrated ? 'Success' : isMigrationPending ? <Dots>Migrating</Dots> : 'Migrate'}
+              {isSuccessfullyMigrated ? t('Success') : isMigrationPending ? <Dots>{t('Migrating')}</Dots> : t('Migrate')}
             </ButtonConfirmed>
           </AutoColumn>
         </div>
@@ -333,6 +334,8 @@ export default function MigrateV1Exchange({
   const tokenAddress = useSingleCallResult(exchangeContract, 'tokenAddress', undefined, NEVER_RELOAD)?.result?.[0]
 
   const token = useToken(tokenAddress)
+  const { t } = useTranslation()
+
 
   const liquidityToken: Token | undefined = useMemo(
     () =>
@@ -354,19 +357,18 @@ export default function MigrateV1Exchange({
       <AutoColumn gap="16px">
         <AutoRow style={{ alignItems: 'center', justifyContent: 'space-between' }} gap="8px">
           <BackArrow to="/migrate/v1" />
-          <TYPE.mediumHeader>Migrate V1 Liquidity</TYPE.mediumHeader>
+          <TYPE.mediumHeader>{t('Migrate V1 Liquidity')}</TYPE.mediumHeader>
           <div>
-            <QuestionHelper text="Migrate your liquidity tokens from Uniswap V1 to Uniswap V2." />
+            <QuestionHelper text={t('Migrate your liquidity tokens from Uniswap V1 to Uniswap V2.')} />
           </div>
         </AutoRow>
 
         {!account ? (
-          <TYPE.largeHeader>You must connect an account.</TYPE.largeHeader>
+          <TYPE.largeHeader>{t('You must connect an account.')}</TYPE.largeHeader>
         ) : validatedAddress && token?.equals(WETH[chainId]) ? (
           <>
             <TYPE.body my={9} style={{ fontWeight: 400 }}>
-              Because Uniswap V2 uses WETH under the hood, your Uniswap V1 WETH/ETH liquidity cannot be migrated. You
-              may want to remove your liquidity instead.
+            {t('Because Uniswap V2 uses WETH under the hood, your Uniswap V1 WETH/ETH liquidity cannot be migrated. You may want to remove your liquidity instead.')}
             </TYPE.body>
 
             <ButtonConfirmed
@@ -374,13 +376,13 @@ export default function MigrateV1Exchange({
                 history.push(`/remove/v1/${validatedAddress}`)
               }}
             >
-              Remove
+              {t('Remove')}
             </ButtonConfirmed>
           </>
         ) : userLiquidityBalance && token ? (
           <V1PairMigration liquidityTokenAmount={userLiquidityBalance} token={token} />
         ) : (
-          <EmptyState message="Loading..." />
+          <EmptyState message={t('Loading...')} />
         )}
       </AutoColumn>
     </BodyWrapper>

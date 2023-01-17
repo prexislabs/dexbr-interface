@@ -12,6 +12,8 @@ import { ExternalLink } from '../../theme/components'
 import { getEtherscanLink } from '../../utils'
 import { AutoColumn } from '../Column'
 import { AutoRow } from '../Row'
+import { useTranslation } from 'react-i18next'
+
 
 const Fader = styled.div<{ count: number }>`
   position: absolute;
@@ -38,6 +40,7 @@ export default function TxnPopup({
 }) {
   const { chainId } = useActiveWeb3React()
   const [count, setCount] = useState(1)
+  const { t } = useTranslation()
 
   const [isRunning, setIsRunning] = useState(true)
   const removePopup = useRemovePopup()
@@ -63,7 +66,7 @@ export default function TxnPopup({
       </div>
       <AutoColumn gap="8px">
         <TYPE.body fontWeight={500}>{summary ?? 'Hash: ' + hash.slice(0, 8) + '...' + hash.slice(58, 65)}</TYPE.body>
-        <ExternalLink href={getEtherscanLink(chainId, hash, 'transaction')}>View on Etherscan</ExternalLink>
+        <ExternalLink href={getEtherscanLink(chainId, hash, 'transaction')}>{t('')}</ExternalLink>
       </AutoColumn>
       <Fader count={count} />
     </AutoRow>

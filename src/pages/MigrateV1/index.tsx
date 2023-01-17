@@ -17,10 +17,14 @@ import QuestionHelper from '../../components/QuestionHelper'
 import { Dots } from '../../components/swap/styleds'
 import { useAddUserToken } from '../../state/user/hooks'
 import { isDefaultToken, isCustomAddedToken } from '../../utils'
+import { useTranslation } from 'react-i18next'
+
 
 export default function MigrateV1() {
   const theme = useContext(ThemeContext)
   const { account, chainId } = useActiveWeb3React()
+  const { t } = useTranslation()
+
 
   const [tokenSearch, setTokenSearch] = useState<string>('')
   const handleTokenSearchChange = useCallback(e => setTokenSearch(e.target.value), [setTokenSearch])
@@ -71,27 +75,26 @@ export default function MigrateV1() {
       <AutoColumn gap="16px">
         <AutoRow style={{ alignItems: 'center', justifyContent: 'space-between' }} gap="8px">
           <BackArrow to="/pool" />
-          <TYPE.mediumHeader>Migrate V1 Liquidity</TYPE.mediumHeader>
+          <TYPE.mediumHeader>{t('Migrate V1 Liquidity')}</TYPE.mediumHeader>
           <div>
-            <QuestionHelper text="Migrate your liquidity tokens from Uniswap V1 to Uniswap V2." />
+            <QuestionHelper text={t('Migrate your liquidity tokens from Uniswap V1 to Uniswap V2.')} />
           </div>
         </AutoRow>
 
         <TYPE.body style={{ marginBottom: 8, fontWeight: 400 }}>
-          For each pool shown below, click migrate to remove your liquidity from Uniswap V1 and deposit it into Uniswap
-          V2.
+        {t('For each pool shown below, click migrate to remove your liquidity from Uniswap V1 and deposit it into Uniswap V2.')}
         </TYPE.body>
 
         {!account ? (
           <LightCard padding="40px">
             <TYPE.body color={theme.text3} textAlign="center">
-              Connect to a wallet to view your V1 liquidity.
+            {t('Connect to a wallet to view your V1 liquidity.')}
             </TYPE.body>
           </LightCard>
         ) : isLoading ? (
           <LightCard padding="40px">
             <TYPE.body color={theme.text3} textAlign="center">
-              <Dots>Loading</Dots>
+              <Dots>{t('Loading')}</Dots>
             </TYPE.body>
           </LightCard>
         ) : (
@@ -100,13 +103,13 @@ export default function MigrateV1() {
               <SearchInput
                 value={tokenSearch}
                 onChange={handleTokenSearchChange}
-                placeholder="Enter a token address to find liquidity"
+                placeholder={t('Enter a token address to find liquidity')}
               />
             </AutoRow>
             {allV1PairsWithLiquidity?.length > 0 ? (
               <>{allV1PairsWithLiquidity}</>
             ) : (
-              <EmptyState message="No V1 Liquidity found." />
+              <EmptyState message={t('No V1 Liquidity found.')} />
             )}
           </>
         )}

@@ -9,6 +9,8 @@ import { ArrowUpCircle } from 'react-feather'
 import { ButtonPrimary } from '../Button'
 import { AutoColumn, ColumnCenter } from '../Column'
 import Circle from '../../assets/images/blue-loader.svg'
+import { useTranslation } from 'react-i18next'
+
 
 import { getEtherscanLink } from '../../utils'
 import { useActiveWeb3React } from '../../hooks'
@@ -58,6 +60,7 @@ export default function ConfirmationModal({
 }: ConfirmationModalProps) {
   const { chainId } = useActiveWeb3React()
   const theme = useContext(ThemeContext)
+  const { t } = useTranslation()
 
   const transactionBroadcast = !!hash
 
@@ -80,7 +83,7 @@ export default function ConfirmationModal({
             </ConfirmedIcon>
             <AutoColumn gap="12px" justify={'center'}>
               <Text fontWeight={500} fontSize={20}>
-                {transactionBroadcast ? 'Transaction Submitted' : 'Waiting For Confirmation'}
+                {transactionBroadcast ? t('Transaction Submitted') : t('Waiting For Confirmation')}
               </Text>
               <AutoColumn gap="12px" justify={'center'}>
                 <Text fontWeight={600} fontSize={14} color="" textAlign="center">
@@ -92,18 +95,18 @@ export default function ConfirmationModal({
                 <>
                   <ExternalLink href={getEtherscanLink(chainId, hash, 'transaction')}>
                     <Text fontWeight={500} fontSize={14} color={theme.primary1}>
-                      View on Etherscan
+                      {t('View on Etherscan')}
                     </Text>
                   </ExternalLink>
                   <ButtonPrimary onClick={onDismiss} style={{ margin: '20px 0 0 0' }}>
                     <Text fontWeight={500} fontSize={20}>
-                      Close
+                    {t('Close')}
                     </Text>
                   </ButtonPrimary>
                 </>
               ) : (
                 <Text fontSize={12} color="#565A69" textAlign="center">
-                  Confirm this transaction in your wallet
+                  {t('Confirm this transaction in your wallet')}
                 </Text>
               )}
             </AutoColumn>

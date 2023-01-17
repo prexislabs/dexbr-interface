@@ -39,7 +39,6 @@ const Web3StatusGeneric = styled(ButtonSecondary)`
   width: 100%;
   align-items: center;
   padding: 0.5rem;
-  border-radius: 12px;
   cursor: pointer;
   user-select: none;
   :focus {
@@ -72,8 +71,8 @@ const Web3StatusConnect = styled(Web3StatusGeneric)<{ faded?: boolean }>`
   ${({ faded }) =>
     faded &&
     css`
-      background-color: ${({ theme }) => theme.primary5};
-      border: 1px solid ${({ theme }) => theme.primary5};
+      background-color: ${({ theme }) => theme.primary4};
+      border: 1px solid ${({ theme }) => theme.primary4};
       color: ${({ theme }) => theme.primaryText1};
 
       :hover,

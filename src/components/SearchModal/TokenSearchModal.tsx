@@ -23,6 +23,7 @@ import { PaddedColumn, SearchInput } from './styleds'
 import TokenList from './TokenList'
 import SortButton from './SortButton'
 
+
 interface TokenSearchModalProps {
   isOpen?: boolean
   onDismiss?: () => void
@@ -57,6 +58,7 @@ export default function TokenSearchModal({
   const searchToken = useToken(searchQuery)
   const searchTokenBalance = useTokenBalanceTreatingWETHasETH(account, searchToken)
   const allTokenBalances_ = useAllTokenBalancesTreatingWETHasETH()
+
   const allTokenBalances = searchToken
     ? {
         [searchToken.address]: searchTokenBalance
@@ -148,16 +150,16 @@ export default function TokenSearchModal({
         <PaddedColumn gap="14px">
           <RowBetween>
             <Text fontWeight={500} fontSize={16}>
-              Select a token
+              {t('Select a token')}
               <QuestionHelper
                 disabled={tooltipOpen}
-                text="Find a token by searching for its name or symbol or by pasting its address below."
+                text={t('Find a token by searching for its name or symbol or by pasting its address below.')}
               />
             </Text>
             <CloseIcon onClick={onDismiss} />
           </RowBetween>
           <Tooltip
-            text="Import any token into your list by pasting the token address into the search field."
+            text={t('Import any token into your list by pasting the token address into the search field.')}
             show={tooltipOpen}
             placement="bottom"
           >
@@ -178,7 +180,7 @@ export default function TokenSearchModal({
           )}
           <RowBetween>
             <Text fontSize={14} fontWeight={500}>
-              Token Name
+            {t('Token Name')}
             </Text>
             <SortButton ascending={invertSearchOrder} toggleSortOrder={() => setInvertSearchOrder(iso => !iso)} />
           </RowBetween>
@@ -198,7 +200,7 @@ export default function TokenSearchModal({
           <AutoRow justify={'center'}>
             <div>
               <LinkStyledButton style={{ fontWeight: 500, color: theme.text2, fontSize: 16 }} onClick={openTooltip}>
-                Having trouble finding a token?
+              {t('Having trouble finding a token?')}
               </LinkStyledButton>
             </div>
           </AutoRow>

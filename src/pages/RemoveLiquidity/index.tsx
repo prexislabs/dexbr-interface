@@ -36,9 +36,14 @@ import { Field } from '../../state/burn/actions'
 import { useWalletModalToggle } from '../../state/application/hooks'
 import { useUserDeadline, useUserSlippageTolerance } from '../../state/user/hooks'
 import { BigNumber } from '@ethersproject/bignumber'
+import { useTranslation } from 'react-i18next'
+
 
 export default function RemoveLiquidity({ match: { params } }: RouteComponentProps<{ tokens: string }>) {
   useDefaultsFromURLMatchParams(params)
+
+  const { t } = useTranslation()
+
 
   const { account, chainId, library } = useActiveWeb3React()
   const theme = useContext(ThemeContext)
@@ -233,7 +238,7 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
         ]
       }
     } else {
-      console.error('Attempting to confirm without approval or a signature. Please contact support.')
+      console.error(t('Attempting to confirm without approval or a signature. Please contact support.'))
     }
 
     const safeGasEstimates = await Promise.all(
@@ -252,7 +257,7 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
 
     // all estimations failed...
     if (indexOfSuccessfulEstimation === -1) {
-      console.error('This transaction would fail. Please contact support.')
+      console.error(t('This transaction would fail. Please contact support.'))
     } else {
       const methodName = methodNames[indexOfSuccessfulEstimation]
       const safeGasEstimate = safeGasEstimates[indexOfSuccessfulEstimation]
@@ -266,11 +271,11 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
 
           addTransaction(response, {
             summary:
-              'Remove ' +
+              t('Remove ') +
               parsedAmounts[Field.TOKEN_A]?.toSignificant(3) +
               ' ' +
               tokens[Field.TOKEN_A]?.symbol +
-              ' and ' +
+              t(' and ') +
               parsedAmounts[Field.TOKEN_B]?.toSignificant(3) +
               ' ' +
               tokens[Field.TOKEN_B]?.symbol
@@ -353,7 +358,7 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
           <>
             <RowBetween>
               <Text color={theme.text2} fontWeight={500} fontSize={16}>
-                Price
+                {t('Price')}
               </Text>
               <Text fontWeight={500} fontSize={16} color={theme.text1}>
                 1 {tokens[Field.TOKEN_A]?.symbol} = {route.midPrice.toSignificant(6)} {tokens[Field.TOKEN_B]?.symbol}
@@ -370,7 +375,7 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
         )}
         <ButtonPrimary disabled={!(approval === ApprovalState.APPROVED || signatureData !== null)} onClick={onRemove}>
           <Text fontWeight={500} fontSize={20}>
-            Confirm
+          {t('Confirm')}
           </Text>
         </ButtonPrimary>
       </>
@@ -409,20 +414,20 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
             topContent={modalHeader}
             bottomContent={modalBottom}
             pendingText={pendingText}
-            title="You will receive"
+            title={t('You will receive')}
           />
           <AutoColumn gap="md">
             <LightCard>
               <AutoColumn gap="20px">
                 <RowBetween>
-                  <Text fontWeight={500}>Amount</Text>
+                  <Text fontWeight={500}>{t('Amount')}</Text>
                   <ClickableText
                     fontWeight={500}
                     onClick={() => {
                       setShowDetailed(!showDetailed)
                     }}
                   >
-                    {showDetailed ? 'Simple' : 'Detailed'}
+                    {showDetailed ? t('Simple') : t('Detailed')}
                   </ClickableText>
                 </RowBetween>
                 <Row style={{ alignItems: 'flex-end' }}>
@@ -515,7 +520,7 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
                   onMax={() => onUserInput(Field.LIQUIDITY_PERCENT, '100')}
                   showMaxButton={!atMaxAmount}
                   token={tokens[Field.TOKEN_A]}
-                  label={'Output'}
+                  label={t('Output')}
                   disableTokenSelect
                   id="remove-liquidity-tokena"
                 />
@@ -530,7 +535,7 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
                   onMax={() => onUserInput(Field.LIQUIDITY_PERCENT, '100')}
                   showMaxButton={!atMaxAmount}
                   token={tokens[Field.TOKEN_B]}
-                  label={'Output'}
+                  label={t('Output')}
                   disableTokenSelect
                   id="remove-liquidity-tokenb"
                 />
@@ -539,7 +544,7 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
             {route && (
               <div style={{ padding: '10px 20px' }}>
                 <RowBetween>
-                  Price:
+                {t('Price')}:
                   <div>
                     1 {tokens[Field.TOKEN_A]?.symbol} = {route.midPrice.toSignificant(6)}{' '}
                     {tokens[Field.TOKEN_B]?.symbol}
@@ -556,7 +561,7 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
             )}
             <div style={{ position: 'relative' }}>
               {!account ? (
-                <ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>
+                <ButtonLight onClick={toggleWalletModal}>{t('Connect Wallet')}</ButtonLight>
               ) : (
                 <RowBetween>
                   <ButtonConfirmed
@@ -568,11 +573,11 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
                     fontSize={16}
                   >
                     {approval === ApprovalState.PENDING ? (
-                      <Dots>Approving</Dots>
+                      <Dots>{t('Approving')}</Dots>
                     ) : approval === ApprovalState.APPROVED || signatureData !== null ? (
-                      'Approved'
+                      t('Approved')
                     ) : (
-                      'Approve'
+                      t('Approve')
                     )}
                   </ButtonConfirmed>
                   <ButtonError
@@ -583,7 +588,7 @@ export default function RemoveLiquidity({ match: { params } }: RouteComponentPro
                     error={!isValid && !!parsedAmounts[Field.TOKEN_A] && !!parsedAmounts[Field.TOKEN_B]}
                   >
                     <Text fontSize={16} fontWeight={500}>
-                      {error || 'Remove'}
+                      {error || t('Remove')}
                     </Text>
                   </ButtonError>
                 </RowBetween>

@@ -10,6 +10,8 @@ import { usePair } from '../../data/Reserves'
 import { useTokenBalances } from '../wallet/hooks'
 import { tryParseAmount } from '../swap/hooks'
 import { useTotalSupply } from '../../data/TotalSupply'
+import { useTranslation } from 'react-i18next'
+
 
 const ZERO = JSBI.BigInt(0)
 
@@ -30,6 +32,8 @@ export function useDerivedBurnInfo(): {
   error?: string
 } {
   const { account } = useActiveWeb3React()
+  const { t } = useTranslation()
+
 
   const {
     independentField,
@@ -148,11 +152,11 @@ export function useDerivedBurnInfo(): {
 
   let error: string | undefined
   if (!account) {
-    error = 'Connect Wallet'
+    error = t('Connect Wallet')
   }
 
   if (!parsedAmounts[Field.LIQUIDITY] || !parsedAmounts[Field.TOKEN_A] || !parsedAmounts[Field.TOKEN_B]) {
-    error = error ?? 'Enter an amount'
+    error = error ?? t('Enter an amount')
   }
 
   return { tokens, pair, route, parsedAmounts, error }

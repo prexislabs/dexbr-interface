@@ -10,6 +10,8 @@ import { AutoColumn } from '../Column'
 import { RowBetween, RowFixed } from '../Row'
 import TokenLogo from '../TokenLogo'
 import { TruncatedText } from './styleds'
+import { useTranslation } from 'react-i18next'
+
 
 export default function SwapModalHeader({
   tokens,
@@ -27,6 +29,8 @@ export default function SwapModalHeader({
   recipient: string | null
 }) {
   const theme = useContext(ThemeContext)
+  const { t } = useTranslation()
+
 
   return (
     <AutoColumn gap={'md'} style={{ marginTop: '20px' }}>
@@ -58,26 +62,26 @@ export default function SwapModalHeader({
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '12px 0 0 0px' }}>
         {independentField === Field.INPUT ? (
           <TYPE.italic textAlign="left" style={{ width: '100%' }}>
-            {`Output is estimated. You will receive at least `}
+            {t('Output is estimated. You will receive at least ')}
             <b>
               {slippageAdjustedAmounts[Field.OUTPUT]?.toSignificant(6)} {tokens[Field.OUTPUT]?.symbol}
             </b>
-            {' or the transaction will revert.'}
+            {t(' or the transaction will revert.')}
           </TYPE.italic>
         ) : (
           <TYPE.italic textAlign="left" style={{ width: '100%' }}>
-            {`Input is estimated. You will sell at most `}
+            {t('Input is estimated. You will sell at most ')}
             <b>
               {slippageAdjustedAmounts[Field.INPUT]?.toSignificant(6)} {tokens[Field.INPUT]?.symbol}
             </b>
-            {' or the transaction will revert.'}
+            {t(' or the transaction will revert.')}
           </TYPE.italic>
         )}
       </AutoColumn>
       {recipient !== null ? (
         <AutoColumn justify="flex-start" gap="sm" style={{ padding: '12px 0 0 0px' }}>
           <TYPE.main>
-            Output will be sent to{' '}
+          {t('Output will be sent to')}{' '}
             <b title={recipient}>{isAddress(recipient) ? shortenAddress(recipient) : recipient}</b>
           </TYPE.main>
         </AutoColumn>

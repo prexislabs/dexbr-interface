@@ -20,7 +20,6 @@ const StyledRangeInput = styled.input<{ value: number }>`
     height: 28px;
     width: 28px;
     background-color: #565a69;
-    border-radius: 100%;
     border: none;
     transform: translateY(-50%);
     color: ${({ theme }) => theme.bg1};
@@ -36,7 +35,6 @@ const StyledRangeInput = styled.input<{ value: number }>`
     height: 28px;
     width: 28px;
     background-color: #565a69;
-    border-radius: 100%;
     border: none;
     color: ${({ theme }) => theme.bg1};
 
@@ -51,7 +49,6 @@ const StyledRangeInput = styled.input<{ value: number }>`
     height: 28px;
     width: 28px;
     background-color: #565a69;
-    border-radius: 100%;
     color: ${({ theme }) => theme.bg1};
 
     &:hover,

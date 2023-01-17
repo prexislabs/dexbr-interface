@@ -12,13 +12,14 @@ import { getEtherscanLink, isDefaultToken } from '../../utils'
 import PropsOfExcluding from '../../utils/props-of-excluding'
 import QuestionHelper from '../QuestionHelper'
 import TokenLogo from '../TokenLogo'
+import { useTranslation } from 'react-i18next'
+
 
 const Wrapper = styled.div<{ error: boolean }>`
-  background: ${({ theme, error }) => transparentize(0.9, error ? theme.red1 : theme.yellow1)};
+  background: ${({ theme, error }) => transparentize(0.0, error ? theme.red1 : theme.white)};
   position: relative;
   padding: 1rem;
-  /* border: 0.5px solid ${({ theme, error }) => transparentize(0.4, error ? theme.red1 : theme.yellow1)}; */
-  border-radius: 10px;
+  /* border: 0.5px solid ${({ theme, error }) => transparentize(0.4, error ? theme.red1 : theme.white)}; */
   margin-bottom: 20px;
   display: grid;
   grid-template-rows: 14px auto auto;
@@ -35,7 +36,7 @@ const Row = styled.div`
 `
 
 const CloseColor = styled(Close)`
-  color: #aeaeae;
+  color: #000;
 `
 
 const CloseIcon = styled.div`
@@ -76,6 +77,8 @@ export default function TokenWarningCard({ token, ...rest }: TokenWarningCardPro
   const [dismissed, dismissTokenWarning] = useTokenWarningDismissal(chainId, token)
 
   const allTokens = useAllTokens()
+  const { t } = useTranslation()
+
 
   const duplicateNameOrSymbol = useMemo(() => {
     if (isDefault || !token || !chainId) return false
@@ -99,22 +102,22 @@ export default function TokenWarningCard({ token, ...rest }: TokenWarningCardPro
         </CloseIcon>
       )}
       <Row>
-        <TYPE.subHeader>{duplicateNameOrSymbol ? 'Duplicate token name or symbol' : 'Imported token'}</TYPE.subHeader>
+        <TYPE.subHeader>{duplicateNameOrSymbol ? t('Duplicate token name or symbol') : t('Imported token')}</TYPE.subHeader>
         <QuestionHelper text={duplicateNameOrSymbol ? DUPLICATE_NAME_HELP_TEXT : HELP_TEXT} />
       </Row>
       <Row>
         <TokenLogo address={token.address} />
-        <div style={{ fontWeight: 500 }}>
+        <div style={{ fontWeight: 500}}>
           {token && token.name && token.symbol && token.name !== token.symbol
             ? `${token.name} (${token.symbol})`
             : token.name || token.symbol}
         </div>
         <ExternalLink style={{ fontWeight: 400 }} href={getEtherscanLink(chainId, token.address, 'token')}>
-          (View on Etherscan)
+          ({t('View on Etherscan')})
         </ExternalLink>
       </Row>
       <Row>
-        <TYPE.italic>Verify this is the correct token before making any transactions.</TYPE.italic>
+        <TYPE.italic>{t('Verify this is the correct token before making any transactions.')}</TYPE.italic>
       </Row>
     </Wrapper>
   )

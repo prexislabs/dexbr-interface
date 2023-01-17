@@ -18,6 +18,8 @@ import { SwapState } from './reducer'
 import useToggledVersion from '../../hooks/useToggledVersion'
 import { useUserSlippageTolerance } from '../user/hooks'
 import { computeSlippageAdjustedAmounts } from '../../utils/prices'
+import { useTranslation } from 'react-i18next'
+
 
 export function useSwapState(): AppState['swap'] {
   return useSelector<AppState, AppState['swap']>(state => state.swap)
@@ -98,6 +100,8 @@ export function useDerivedSwapInfo(): {
   const { account } = useActiveWeb3React()
 
   const toggledVersion = useToggledVersion()
+  const { t } = useTranslation()
+
 
   const {
     independentField,
@@ -140,19 +144,19 @@ export function useDerivedSwapInfo(): {
 
   let error: string | undefined
   if (!account) {
-    error = 'Connect Wallet'
+    error = t('Connect Wallet')
   }
 
   if (!parsedAmount) {
-    error = error ?? 'Enter an amount'
+    error = error ?? t('Enter an amount')
   }
 
   if (!tokens[Field.INPUT] || !tokens[Field.OUTPUT]) {
-    error = error ?? 'Select a token'
+    error = error ?? t('Select a token')
   }
 
   if (!to) {
-    error = error ?? 'Enter a recipient'
+    error = error ?? t('Enter a recipient')
   }
 
   const [allowedSlippage] = useUserSlippageTolerance()
@@ -175,7 +179,7 @@ export function useDerivedSwapInfo(): {
   ]
 
   if (balanceIn && amountIn && balanceIn.lessThan(amountIn)) {
-    error = 'Insufficient ' + amountIn.token.symbol + ' balance'
+    error = t('Insufficient ') + amountIn.token.symbol + t(' balance')
   }
 
   return {

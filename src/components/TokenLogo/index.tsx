@@ -5,6 +5,7 @@ import { useActiveWeb3React } from '../../hooks'
 import { WETH } from 'dexbr-sdk'
 
 import EthereumLogo from '../../assets/images/ethereum-logo.png'
+import DefaultTokenIcon from '../../assets/images/tokens/default-token-icon.png'
 import USDCLogo from '../../assets/images/tokens/usdc-icon.png'
 import DextLogo from '../../assets/images/tokens/dexbr-icon.svg'
 
@@ -29,7 +30,6 @@ const Image = styled.img<{ size: string }>`
   width: ${({ size }) => size};
   height: ${({ size }) => size};
   background-color: white;
-  border-radius: 1rem;
   box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.075);
 `
 
@@ -47,7 +47,6 @@ const StyledEthereumLogo = styled.img<{ size: string }>`
   width: ${({ size }) => size};
   height: ${({ size }) => size};
   box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.075);
-  border-radius: 24px;
 `
 
 export default function TokenLogo({
@@ -71,11 +70,7 @@ export default function TokenLogo({
     path = getTokenLogoURL(validated)
   } else {
     return (
-      <Emoji {...rest} size={size}>
-        <span role="img" aria-label="Thinking">
-          🤔
-        </span>
-      </Emoji>
+      <Image src={DefaultTokenIcon} {...rest} size={size} />
     )
   }
 

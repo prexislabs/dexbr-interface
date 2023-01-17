@@ -1,6 +1,5 @@
 {
   "name": "dexbr-ui",
-  "version": "5.0.0",
   "description": "dexbr-ui",
   "homepage": ".",
   "private": true,
@@ -96,6 +95,7 @@
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "animate.css": "^4.1.1",
     "dexbr-sdk": "https://github.com/prexislabs/dexbr-sdk.git",
     "dexbr-v2-core": "https://github.com/prexislabs/dexbr-v2-core.git",
     "dexbr-v2-periphery": "https://github.com/prexislabs/dexbr-v2-periphery.git"

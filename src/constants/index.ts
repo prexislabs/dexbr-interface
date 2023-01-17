@@ -3,7 +3,7 @@ import { ChainId, JSBI, Percent, Token, WETH, Pair, TokenAmount } from 'dexbr-sd
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
 import { COMP, DAI, MKR, USDC, USDT } from './tokens/mainnet'
 
-export const ROUTER_ADDRESS = '0x55A508d31f6A04e3cB7D00C0A363f325Bd89Fd5B'
+export const ROUTER_ADDRESS = '0x35b3Db5DCe41E3b0Bcedb1881Df4FEa68Ca1d374'
 
 // a list of tokens by chain
 type ChainTokenList = {
@@ -12,11 +12,7 @@ type ChainTokenList = {
 
 const WETH_ONLY: ChainTokenList = {
   [ChainId.MAINNET]: [WETH[ChainId.MAINNET]],
-  [ChainId.ROPSTEN]: [WETH[ChainId.ROPSTEN]],
-  [ChainId.RINKEBY]: [WETH[ChainId.RINKEBY]],
-  [ChainId.GÖRLI]: [WETH[ChainId.GÖRLI]],
-  [ChainId.KOVAN]: [WETH[ChainId.KOVAN]],
-  [ChainId.TBINANCE]: [WETH[ChainId.TBINANCE]]
+  [ChainId.GÖRLI]: [WETH[ChainId.GÖRLI]]
 }
 
 // used to construct intermediary pairs for trading
